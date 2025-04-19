@@ -31,7 +31,7 @@ export default function OpenLotteries() {
           <p className="text-center max-w-5xl">There are no active Timely lotteries at the moment. Please create and check later.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 xl:gap-16 mx-2 my-8 lg:m-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 xl:gap-16  my-8">
           {filteredLotteries.map((data: any, i: number) => (
             !data.winnerChosen && (
               <div key={i} className="flex items-center justify-center w-full">
@@ -53,7 +53,7 @@ export default function OpenLotteries() {
           <p className="text-center max-w-5xl">There are no active limited lotteries at the moment. Please create and check later.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 xl:gap-16 mx-2 my-8 lg:m-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 xl:gap-16  my-8">
           {limitedLotteries.map((data: any, i: number) => (
             !data.winnerChosen && (
               <div key={i} className="flex items-center justify-center w-full">

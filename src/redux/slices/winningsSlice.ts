@@ -1,10 +1,10 @@
 
-import { Winnings } from '@/types';
+import { currentWinnings, previousWinnings } from '@/types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface WinningsState {
-  currentWinnings: Winnings[];
-  previousWinnings: Winnings[];
+  currentWinnings: currentWinnings[];
+  previousWinnings: previousWinnings[];
   isLoading: boolean;
 }
 
@@ -18,10 +18,10 @@ const winningsSlice = createSlice({
   name: 'winnings',
   initialState,
   reducers: {
-    setCurrentWinnings: (state, action: PayloadAction<Winnings[]>) => {
+    setCurrentWinnings: (state, action: PayloadAction<currentWinnings[]>) => {
       state.currentWinnings = action.payload;
     },
-    setPreviousWinnings: (state, action: PayloadAction<Winnings[]>) => {
+    setPreviousWinnings: (state, action: PayloadAction<previousWinnings[]>) => {
       state.previousWinnings = action.payload;
     },
     setIsLoading: (state, action: PayloadAction<boolean>) => {

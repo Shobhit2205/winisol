@@ -155,15 +155,6 @@ export const revealWinnerSign = async (lotteryId: number, revealWinnerSignature:
     }
 }
 
-export const getWinningsByPublicKey = async (publicKey: string) => {
-    try {
-        const res = await axios.get<WinningData>(`${BACKEND_API}/api/v1/lottery/get-winner-by-publicKey/${publicKey}`);
-        return res;
-    } catch (error) {
-        console.error("Error fetching winnings:", error);
-        throw error;
-    }
-}
 
 export const claimWinningsSign = async (lotteryId: number, publicKey: string, signature: string) => {
     try {
@@ -187,5 +178,21 @@ export const authorityTransferSign = async (lotteryId: number, publicKey: string
     } catch (error) {
         console.error("Error transferring authority:", error);
         throw error;
+    }
+}
+
+export const setLoteryCompleted = async (lotteryId: number, token: string) => {
+    try {
+        const res = await axios.put(`${BACKEND_API}/api/v1/lottery/update-lottery-status`, { lotteryId }, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        });
+        return res;
+    } catch (error) {
+        console.error("Error setting lottery completed:", error);
+        throw error;
+        
     }
 }

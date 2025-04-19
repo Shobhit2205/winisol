@@ -26,7 +26,7 @@ interface ChooseTicketDialogProps {
 }
 
 export function ChooseTicketDialog({lotteryName, lotteryId, price, totalTickets, ticketBought}: ChooseTicketDialogProps) {
-  const { buyLimitedLotteryTicket } = useWinisolProgramAccount({account: new PublicKey("FKKVUnKqXHtHZEivpK4saiDF8pwV9Q67RiFGwBLxNvEY")})
+  const { buyLimitedLotteryTicket } = useWinisolProgramAccount()
   const [selectedTicket, setSelectedTicket] = useState<number | null>(null);
   const isTicketBought = (ticket: number) => {
     const ticketIdentifier = `${lotteryName} #${lotteryId}-${ticket}`;

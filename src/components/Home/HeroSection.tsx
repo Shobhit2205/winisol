@@ -7,11 +7,10 @@ import HeroAir from "@/assets/hero-air.png";
 import Image from "next/image";
 import Link from "next/link";
 import { IconBrandDiscord, IconBrandInstagram, IconBrandX } from "@tabler/icons-react";
-import { useWiniSolTransactionToast } from "../ui/layouts/Layout";
 
 
 export default function HeroSection() {
-    const txToast = useWiniSolTransactionToast();
+
     return (
         <div className="mt-16 h-fit w-full flex justify-center relative">
             <Image width={100} height={100} src={HeroAir.src} alt="Hero image" className="w-12 h-12" />
@@ -39,10 +38,10 @@ export default function HeroSection() {
             <Image width={100} height={100} src={HeroAir.src} alt="solana" className="w-12 h-12 " />
             
            <div className="flex flex-col gap-4 bg-[#63636333] items-center justify-center py-6 px-2 rounded-badge h-fit absolute right-4 top-1/3 z-10">
-           <a href="https://x.com/winisol_" target="_blank" className="cursor-pointer transition-all hover:scale-125 hover:text-primary" >
+           <a href="https://www.instagram.com/winisol_/" target="_blank" className="cursor-pointer transition-all hover:scale-125 hover:text-primary" >
             <IconBrandInstagram size={32}/>
            </a>
-           <a href="https://discord.gg/VkQPP6kZ" target="_blank" className="cursor-pointer transition-all hover:scale-125 hover:text-primary" >
+           <a href="https://discord.gg/FdvDbf8MPp" target="_blank" className="cursor-pointer transition-all hover:scale-125 hover:text-primary" >
             <IconBrandDiscord size={32}/>
            </a>
            <a href="https://x.com/winisol_" target="_blank" className="cursor-pointer transition-all hover:scale-125 hover:text-primary" >

@@ -16,19 +16,11 @@ import { useSelector } from "react-redux";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { formatDistanceToNowStrict } from "date-fns";
 import { SOLANA_ENVIRONMENT } from "@/lib/constants";
+import { RootState } from "@/redux/store";
+import { Winner } from "@/types";
 
 export default function Page() {
-  const { lotteries, isLotteriesLoading } = useSelector(
-    (state: any) => state.lotteries
-  );
-  const filteredLotteries = lotteries.filter(
-    (lottery: any) => lottery.winnerChosen
-  );
-
-  const sortedLotteries = filteredLotteries.sort(
-    (a: any, b: any) =>
-      new Date(b.TimeWon).getTime() - new Date(a.TimeWon).getTime()
-  );
+  const { winners, isWinnersLoading } = useSelector((state: RootState) => state.recentWinners);
 
   return (
     <div className="my-8 xl:my-16 flex flex-col items-center  gap-16 max-w-screen-2xl mx-4 xl:mx-auto min-h-screen">
@@ -69,14 +61,14 @@ export default function Page() {
           </TableHeader>
 
           <TableBody>
-            {isLotteriesLoading ? (
+            {isWinnersLoading ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-8">
                   <span className="loading loading-spinner loading-lg"></span>
                 </TableCell>
               </TableRow>
             ) : (
-              sortedLotteries.map((winner: any) => (
+              winners.map((winner: Winner) => (
                 <TableRow key={winner.id}>
                   <TableCell>
                     <Badge className="border-black ring-primary">
@@ -102,12 +94,12 @@ export default function Page() {
                       src={solanaLogo.src}
                       alt="solana logo"
                     />
-                    {(winner.potAmount * 0.9) / LAMPORTS_PER_SOL} SOL
+                    {Number(winner.winningAmount) / LAMPORTS_PER_SOL} SOL
                   </TableCell>
                   <TableCell>{winner.winnerTicketId}</TableCell>
                   <TableCell className="text-end">
                     {formatDistanceToNowStrict(
-                      new Date(winner.endTime * 1000)
+                      winner.winnerDeclaredTime ?? new Date(),
                     )}{" "}
                     ago
                   </TableCell>

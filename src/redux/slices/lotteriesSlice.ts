@@ -1,5 +1,6 @@
 import { Lottery } from '@/types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 interface LotteriesState {
     lotteries: Lottery[];
@@ -29,10 +30,13 @@ const lotteriesSlice = createSlice({
         updateLottery: (state, action) => {
             const { lotteryId } = action.payload;
             const lottery = state.lotteries.find((lotto) => lotto.id === lotteryId);
+            console.log(lottery?.potAmount);
             if (lottery) {
               lottery.totalTickets += 1;
-              lottery.potAmount += lottery.price;
+              lottery.potAmount = Number(lottery.potAmount) + Number(lottery.price);
             }
+            console.log(lottery?.potAmount);
+            console.log(lottery?.price);
         },
     },
 });

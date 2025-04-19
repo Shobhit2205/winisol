@@ -93,9 +93,8 @@ export type Winisol = {
                 "path": "lotteryId"
               },
               {
-                "kind": "account",
-                "path": "limited_lottery.number_of_ticket_sold",
-                "account": "limitedLottery"
+                "kind": "arg",
+                "path": "ticketNumber"
               }
             ]
           }

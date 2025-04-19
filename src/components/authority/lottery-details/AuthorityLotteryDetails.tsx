@@ -6,6 +6,10 @@ import { Button } from "@/components/ui/button";
 import { useWinisolProgramAccount } from "@/components/winisol/winisol-data-access";
 import { PublicKey } from "@solana/web3.js";
 import { LimitedLottery, Lottery } from "@/types";
+import { setLimitedLoteryCompleted } from "@/services/limitedLotteryService";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { setLoteryCompleted } from "@/services/lotteryService";
 
 type lotteryType = "regular" | "limited";
 
@@ -17,7 +21,9 @@ interface AuthorityLotteryDetailsProps {
 
 export default function AuthorityLotteryDetails({lottery, isLotteryLoading, lotteryType}: AuthorityLotteryDetailsProps) {
 
-  const { initializeLottery, initializeLimitedLottery, createLimitedLotteryRandomness, createRandomness, commitLimitedLotteryRandmoness, commitRandmoness, revealLimitedLotteryWinner, revealWinner, authorityTransfer, authorityLimitedLotteryTransfer } = useWinisolProgramAccount({account: new PublicKey("FKKVUnKqXHtHZEivpK4saiDF8pwV9Q67RiFGwBLxNvEY")});
+  const { initializeLottery, initializeLimitedLottery, createLimitedLotteryRandomness, createRandomness, commitLimitedLotteryRandmoness, commitRandmoness, revealLimitedLotteryWinner, revealWinner, authorityTransfer, authorityLimitedLotteryTransfer } = useWinisolProgramAccount();
+  const { token } = useAuth();
+  const { toast } = useToast();
 
 
   const handleInitializeLottery = async () => {
@@ -29,6 +35,35 @@ export default function AuthorityLotteryDetails({lottery, isLotteryLoading, lott
       else {
         await initializeLottery.mutateAsync({lottery_id : lottery?.id});
       }
+      
+    } catch (error) {
+      console.error("Error initializing lottery:", error);
+    }
+  };
+
+  const handleCompleteLottery = async () => {
+    try {
+      if(!lottery?.id) return;
+      if(!token) {
+        toast({
+          title: "Error",
+          description: "Please login to your account",
+          variant: "destructive",
+        })
+        return;
+      };
+      if(lotteryType === "limited") {
+        await setLimitedLoteryCompleted(lottery?.id, token );
+      }
+      else {
+        await setLoteryCompleted(lottery?.id, token);
+      }
+
+      toast({
+        title: "Success",
+        description: "Lottery completed successfully",
+        variant: "default",
+      })
       
     } catch (error) {
       console.error("Error initializing lottery:", error);
@@ -111,6 +146,15 @@ export default function AuthorityLotteryDetails({lottery, isLotteryLoading, lott
             </Button>
           </div>
       </div>}
+
+      {lottery?.priceClaimed && lottery?.authorityPriceClaimed && (
+        <Button  className="border-2 border-red-500 bg-custom_black rounded-xl py-6 px-10 text-xl font-medium text-red-500 hover:bg-red-500 hover:text-white w-full"
+        onClick={handleCompleteLottery}
+        disabled={lottery.status === "completed"}
+        >
+          Set Lottery Completed
+        </Button>
+      )}
     </div>
   );
 }

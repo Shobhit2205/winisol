@@ -19,7 +19,7 @@ interface LotteryCardProps {
         id: number;
         lotteryName: string,
         lotterySymbol: string,
-        lotteryImage: string,
+        image: string,
         startTime: number,
         endTime: number,
         potAmount: number,
@@ -27,7 +27,7 @@ interface LotteryCardProps {
         price: number,
         priceClaimedSignature? : string,
         winnerTicketId?: string
-        winnings?: number
+        winningAmount?: number
         lotteryType?: string
     },
     pageType: pageType,
@@ -35,7 +35,7 @@ interface LotteryCardProps {
 }
 
 export default function LotteryCard({data, pageType, isPrevoiusWinnings}: LotteryCardProps) {
-    const { buyTicket, claimLimitedLotteryWinnings, claimWinnings } = useWinisolProgramAccount({account: new PublicKey("FKKVUnKqXHtHZEivpK4saiDF8pwV9Q67RiFGwBLxNvEY")});
+    const { buyTicket, claimLimitedLotteryWinnings, claimWinnings } = useWinisolProgramAccount();
     const [isBuying, setIsBuying] = useState(false);
     const [isClaiming, setIsClaiming] = useState(false);
     const dispatch = useDispatch();
@@ -91,6 +91,7 @@ export default function LotteryCard({data, pageType, isPrevoiusWinnings}: Lotter
     const handleClaimWinnings = async () => {
         try {
             setIsClaiming(true);
+            console.log(data)
             if(data.lotteryType === "limited") {
                 await claimLimitedLotteryWinnings.mutateAsync({lottery_id: data.id})
             } else {
@@ -119,7 +120,7 @@ export default function LotteryCard({data, pageType, isPrevoiusWinnings}: Lotter
             <div className='w-full flex gap-2 h-[120px]'>
                 <div className='rounded-md bg-gradient-to-r from-primary to-secondary p-[1px] w-full'>
                     <div className='rounded-md flex h-full w-full items-center justify-center  bg-black' >
-                        <Image width={100} height={100} src={data.lotteryImage || "https://res.cloudinary.com/shobhit2205/image/upload/v1742150434/Group_n9sfdb.png"} alt='solana lottery image' className='object-cover w-10' />
+                        <Image width={100} height={100} src={data?.image || "https://res.cloudinary.com/shobhit2205/image/upload/v1742150434/Group_n9sfdb.png"} alt='solana lottery image' className='object-cover w-10' />
                     </div>
                 </div>
                 <div className='rounded-md bg-gradient-to-r from-primary to-secondary p-[1px] w-full h-[105px] self-end'>
@@ -129,7 +130,7 @@ export default function LotteryCard({data, pageType, isPrevoiusWinnings}: Lotter
                         </div>
                         <div className='mt-2'>
                             
-                            <h3 className='text-4xl text-primary'>{((pageType === "user_claim_winnings" ? data.winnings : data.potAmount) || 0 )/ LAMPORTS_PER_SOL}</h3>
+                            <h3 className='text-4xl text-primary'>{((pageType === "user_claim_winnings" ? data.winningAmount : data.potAmount) || 0 )/ LAMPORTS_PER_SOL}</h3>
                             <div className='flex gap-2 items-center'>
                                 <Image width={12} height={12} src={solanaLogo.src} alt='solana logo' />
                                 <h4 className='text-base'>sol</h4>

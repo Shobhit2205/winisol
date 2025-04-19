@@ -1,6 +1,7 @@
 'use client'
 
 import { useToast } from '@/hooks/use-toast'
+import { CONNECTION_ENDPOINT } from '@/lib/constants'
 import { clusterApiUrl, Connection } from '@solana/web3.js'
 import { atom, useAtomValue, useSetAtom } from 'jotai'
 import { atomWithStorage } from 'jotai/utils'
@@ -26,7 +27,7 @@ export enum ClusterNetwork {
 export const defaultClusters: Cluster[] = [
   {
     name: 'devnet',
-    endpoint: clusterApiUrl('devnet'),
+    endpoint: CONNECTION_ENDPOINT || clusterApiUrl('devnet'),
     network: ClusterNetwork.Devnet,
   },
   { name: 'local', endpoint: 'http://localhost:8899' },

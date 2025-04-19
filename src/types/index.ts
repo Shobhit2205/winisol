@@ -3,6 +3,7 @@ export interface Lottery {
   lotteryName: string,
   lotterySymbol: string
   lotteryURI: string
+  status: string
   startTime: number
   endTime: number
   price: number
@@ -97,17 +98,38 @@ export interface LotteryDetailsResponse {
     lottery: SingleLotteryDetail
 }
 
+
+export interface currentWinnings {
+    id: number,
+    lotteryName: string,
+    lotterySymbol: string,
+    lotteryType: string,
+    lotteryURI: string,
+    image: string,
+    price: number,
+    winningAmount: number,
+    winnerTicketId: string,
+}
+
+export interface previousWinnings {
+    id: number,
+    lotteryName: string,
+    lotterySymbol: string,
+    lotteryType: string,
+    lotteryURI: string,
+    image: string,
+    price: number,
+    winningAmount: number,
+    winnerTicketId: string,
+    priceClaimed: boolean,
+    priceClaimedSignature: string,
+    priceClaimedTime: Date
+}
 export interface WinningData {
     success: boolean,
     message: string,
-    currentWinnings : {
-        count: number,
-        lotteries: Lottery[]
-    },
-    previousWinnings : {
-        count: number,
-        lotteries: Lottery[]
-    }
+    currentWinnings : currentWinnings[],
+    previousWinnings : previousWinnings[]
 }
 
 export interface LimitedLottery {
@@ -116,6 +138,7 @@ export interface LimitedLottery {
     lotterySymbol: string,
     lotteryURI: string,
     image: string,
+    status: string,
     totalPotAmount: number,
     totalTickets: number,
     ticketBought: string[],
@@ -167,4 +190,23 @@ export interface Winnings {
     priceClaimed: boolean,
     priceClaimedSignature: string | null,
     priceClaimedTime: Date | null,
+}
+
+export interface Winner {
+    id: number;
+    lotteryName: string;
+    lotterySymbol: string;
+    lotteryURI: string;
+    winnerPublicKey: string;
+    winningAmount: string;
+    winnerDeclaredTime: Date | null;
+    winnerTicketId: string;
+    revealWinnerSignature: string | null;
+    lotteryType: 'standard' | 'limited';
+}
+
+export interface RecentWinnersData {
+    success: boolean;
+    winners: Winner[];
+    total: number;
 }

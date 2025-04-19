@@ -87,9 +87,8 @@
                 "path": "lottery_id"
               },
               {
-                "kind": "account",
-                "path": "limited_lottery.number_of_ticket_sold",
-                "account": "LimitedLottery"
+                "kind": "arg",
+                "path": "ticket_number"
               }
             ]
           }

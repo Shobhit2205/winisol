@@ -34,7 +34,7 @@ const Tabs: Tab[] = [
   },
   {
     id: "tab3",
-    label: "Create Lottery",
+    label: "Create Regular Lottery",
     content: (
       <CreateLottery/>
     ),

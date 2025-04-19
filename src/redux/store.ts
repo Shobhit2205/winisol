@@ -2,12 +2,14 @@ import { configureStore } from '@reduxjs/toolkit';
 import winningsReducer from './slices/winningsSlice';
 import lotteriesReducer from './slices/lotteriesSlice';
 import limitedLotteriesReducer from './slices/limitedLotterySlice';
+import recentWinnersReducer from './slices/recentWinnersSlice';
 
 const store = configureStore({
   reducer: {
     winnings: winningsReducer,
     lotteries: lotteriesReducer,
-    limitedLotteries: limitedLotteriesReducer
+    limitedLotteries: limitedLotteriesReducer,
+    recentWinners: recentWinnersReducer,
   },
 });
 

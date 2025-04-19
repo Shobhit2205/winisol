@@ -1,15 +1,11 @@
 'use client';
 
-import { ArrowRight, ArrowUpRight, Clock, TicketCheck, UsersRound } from 'lucide-react';
+import { ArrowRight, TicketCheck } from 'lucide-react';
 import Image from 'next/image';
 import solanaLogo from '@/assets/solana-logo.png';
-import { SlidingNumber } from '../../sliding-number';
-import { useEffect, useState } from 'react';
 import { Button } from '../../animated-button';
 import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import Link from 'next/link';
-import { useWinisolProgramAccount } from '@/components/winisol/winisol-data-access';
-import { Badge } from '../../badge';
 import { ChooseTicketDialog } from './ChooseTicketDialog';
 
 type pageType = "authority_open_lottery" | "authority_closed_lottery" | "user_lottery" | "user_claim_winnings"
@@ -18,31 +14,18 @@ interface LimitedLotteryCardProps {
         id: number;
         lotteryName: string,
         lotterySymbol: string,
-        lotteryImage: string,
+        image: string,
         totalPotAmount: number,
         totalTickets: number,
         ticketBought: string[],
         numberOfTicketSold: number
         price: number,
+        winnerTicketId: string,
     },
-    pageType?: pageType,
+    pageType: pageType,
 }
 
 export default function LimitedLotteryCard({data, pageType}: LimitedLotteryCardProps) {
-    const { buyTicket, claimWinnings } = useWinisolProgramAccount({account: new PublicKey("FKKVUnKqXHtHZEivpK4saiDF8pwV9Q67RiFGwBLxNvEY")});
-    const [isBuying, setIsBuying] = useState(false);
-
-    const handleBuyTicket = async () => {
-        try {
-            setIsBuying(true);
-            await buyTicket.mutateAsync({lottery_id: data.id})
-        } catch (error) {
-            console.log(error);
-        }
-        finally {
-            setIsBuying(false);
-        }
-    }
 
     return (
         <div className="flex flex-col gap-3 w-full border border-[#BFBFBF] rounded-2xl px-3 py-4 bg-gradient-to-t from-[rgba(9,9,9,0)] via-[rgba(255,255,255,0.12)] to-[rgba(255,255,255,0.12)]">
@@ -60,7 +43,7 @@ export default function LimitedLotteryCard({data, pageType}: LimitedLotteryCardP
             <div className='w-full flex gap-2 h-[120px]'>
                 <div className='rounded-md bg-gradient-to-r from-primary to-secondary p-[1px] w-full'>
                     <div className='rounded-md flex h-full w-full items-center justify-center  bg-black' >
-                        <Image width={100} height={100} src={data.lotteryImage || "https://res.cloudinary.com/shobhit2205/image/upload/v1742150434/Group_n9sfdb.png"} alt='solana lottery image' className='object-cover w-10' />
+                        <Image width={100} height={100} src={data.image || "https://res.cloudinary.com/shobhit2205/image/upload/v1742150434/Group_n9sfdb.png"} alt='solana lottery image' className='object-cover w-10' />
                     </div>
                 </div>
                 <div className='rounded-md bg-gradient-to-r from-primary to-secondary p-[1px] w-full h-[105px] self-end'>
@@ -89,6 +72,12 @@ export default function LimitedLotteryCard({data, pageType}: LimitedLotteryCardP
                 </div>
             </div>
 
+            {(pageType === "user_claim_winnings" || pageType === "authority_closed_lottery") && 
+            <div>
+                <h3 className='gradient-text text-lg text-center bg-gradient-to-r from-[#FBFBFB] to-[#696969]'>Winner Ticket</h3>
+                <h4 className='gradient-text text-2xl text-center bg-gradient-to-r from-primary to-secondary'>{data.winnerTicketId}</h4>
+            </div>}
+
             <div className='w-full flex items-end justify-between gap-2'>
                 <div className='flex flex-col items-center gap-1 min-w-24'>
                     <div className='flex gap-2 items-center justify-center rounded-badge bg-black w-fit py-1 px-3'>
@@ -103,8 +92,10 @@ export default function LimitedLotteryCard({data, pageType}: LimitedLotteryCardP
                     </div>
                 </div>
                 {pageType === "user_lottery" && <ChooseTicketDialog lotteryName={data.lotteryName} lotteryId={data.id} price={data.price} totalTickets={data.totalTickets} ticketBought={data.ticketBought} />}
-                {pageType === "authority_open_lottery" && 
-                <Link href={`/authority/lottery-details/limited/${data?.id}`} className='w-full'>
+
+                {
+                (pageType === "authority_open_lottery" || pageType === "authority_closed_lottery") && 
+                (<Link href={`/authority/lottery-details/limited/${data?.id}`} className='w-full'>
                 <Button 
                     variant="expandIcon" 
                     Icon={() => <ArrowRight className="h-4 w-4" />} 
@@ -113,19 +104,8 @@ export default function LimitedLotteryCard({data, pageType}: LimitedLotteryCardP
                 >
                     View
                 </Button>
-            </Link>}
+            </Link>)}
             </div>
         </div>
     )
 }
-
-
-export const ShimmerCard = () => {
-    return (
-      <div className="relative w-full h-[450px] rounded-lg bg-transparent overflow-hidden animate-pulse">
-        <div className="absolute top-0 left-0 right-0 bottom-0 bg-gradient-to-r from-primary via-secondary to-teriary-200">
-          <div className="h-full w-full bg-[#0aefb242]"></div>
-        </div>
-      </div>
-    );
-};

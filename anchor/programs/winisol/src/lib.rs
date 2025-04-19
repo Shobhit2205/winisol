@@ -696,9 +696,6 @@ pub mod winisol {
     msg!("Ticket Id : {}", ticket_name);
 
     let metadata_name = ctx.accounts.ticket_metadata.name.replace("\u{0}", "");
-    msg!("Raw Metadata Name: {:?}", ctx.accounts.ticket_metadata.name);
-    msg!("Sanitized Metadata Name: {:?}", metadata_name);
-    msg!("Expected Ticket Name: {:?}", ticket_name);
 
     require!(metadata_name == ticket_name, ErrorCode::IncorrectTicket);
     require!(ctx.accounts.ticket_account.amount > 0, ErrorCode::NoTicket);
@@ -1071,7 +1068,7 @@ pub struct BuyTicket<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(lottery_id: u32)]
+#[instruction(lottery_id: u32, ticket_number: u32)]
 pub struct BuyLimitedLotteryTickets<'info> {
   #[account(mut)]
   pub payer: Signer<'info>,
@@ -1086,7 +1083,7 @@ pub struct BuyLimitedLotteryTickets<'info> {
   #[account(
     init, 
     payer = payer,
-    seeds = [b"limited_lottery".as_ref(), lottery_id.to_le_bytes().as_ref(), limited_lottery.number_of_ticket_sold.to_le_bytes().as_ref()],
+    seeds = [b"limited_lottery".as_ref(), lottery_id.to_le_bytes().as_ref(), ticket_number.to_le_bytes().as_ref()],
     bump,
     mint::decimals = 0,
     mint::authority = collection_mint,
@@ -1184,7 +1181,7 @@ pub struct CommitLimitedLotteryRandomness<'info> {
   #[account(
     mut,
     seeds = [b"limited_lottery".as_ref(), lottery_id.to_le_bytes().as_ref()],
-    bump
+    bump = limited_lottery.bump
   )]
   pub limited_lottery: Box<Account<'info, LimitedLottery>>,
 
@@ -1205,7 +1202,7 @@ pub struct RevealWinner<'info> {
   #[account(
     mut,
     seeds = [b"token_lottery".as_ref(), lottery_id.to_le_bytes().as_ref()],
-    bump
+    bump = token_lottery.bump,
   )]
   pub token_lottery: Box<Account<'info, TokenLottery>>,
 

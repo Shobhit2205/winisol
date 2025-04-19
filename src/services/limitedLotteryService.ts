@@ -166,3 +166,19 @@ export const limitedLotteryAuthorityTransferSign = async (lotteryId: number, pub
         throw error;
     }
 }
+
+export const setLimitedLoteryCompleted = async (lotteryId: number, token: string) => {
+    try {
+        const res = await axios.put(`${BACKEND_API}/api/v1/limited-lottery/update-lottery-status`, { lotteryId }, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        });
+        return res;
+    } catch (error) {
+        console.error("Error setting lottery completed:", error);
+        throw error;
+        
+    }
+}

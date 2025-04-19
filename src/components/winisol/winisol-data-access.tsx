@@ -2,8 +2,8 @@
 
 import { getWinisolProgram, getWinisolProgramId } from '@project/anchor'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
-import { Cluster, LAMPORTS_PER_SOL, PublicKey, Transaction } from '@solana/web3.js'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { Cluster, ComputeBudgetProgram, LAMPORTS_PER_SOL, Transaction } from '@solana/web3.js'
+import { useMutation } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { useCluster } from '../cluster/cluster-data-access'
 import { useAnchorProvider } from '../solana/solana-provider'
@@ -37,35 +37,14 @@ export function useWinisolProgram() {
   const { toast } = useToast();
   const transactionToast = useWiniSolTransactionToast()
 
-
-  const accounts = useQuery({
-    queryKey: ['winisol', 'all', { cluster }],
-    queryFn: () => program.account.tokenLottery.all(),
-  })
-
-  const getProgramAccount = useQuery({
-    queryKey: ['get-program-account', { cluster }],
-    queryFn: () => connection.getParsedAccountInfo(programId),
-  })
-
   const initialize = useMutation<string, Error, CreateLotteryInputArgs>({
     mutationKey: ['tokenlottery', 'initialize-config', { cluster }],
     mutationFn: async (data) =>{
-      if(!provider || !publicKey) {
-        toast({
-          title: 'Error',
-          description: 'Connect your wallet',
-          variant: 'destructive',
-        });
+      if(!publicKey) {
         throw new Error("Provider or public key is missing");
       }
         
       if(!token) {
-        toast({
-          title: 'Error',
-          description: 'Token not found',
-          variant: 'destructive',
-        });
         throw new Error("Token not found");
       }
       
@@ -82,23 +61,26 @@ export function useWinisolProgram() {
 
       const lottery_id = res.data.lottery.id;
 
-    const InitConfigIx = await program.methods.initializeConfig(
-      lottery_id,
-      data.lotteryName, 
-      data.lotterySymbol,
-      data.lotteryURI,
-      new Date(data.startTime).getTime() / 1000, // Convert to UNIX timestamp
-      new Date(data.endTime).getTime() / 1000,
-      new BN(data.price * LAMPORTS_PER_SOL),
-    ).instruction();
+      const InitConfigIx = await program.methods.initializeConfig(
+        lottery_id,
+        data.lotteryName, 
+        data.lotterySymbol,
+        data.lotteryURI,
+        new Date(data.startTime).getTime() / 1000, // Convert to UNIX timestamp
+        new Date(data.endTime).getTime() / 1000,
+        new BN(data.price * LAMPORTS_PER_SOL),
+      ).instruction();
   
-      // const computeUnitLimitIx = anchor.web3.ComputeBudgetProgram.setComputeUnitLimit({
-      //   units: 5000,  // Adjust based on the program's complexity
-      // });
+      const computeUnitLimitIx = ComputeBudgetProgram.setComputeUnitLimit({
+        units: 22000,  
+      });
+      
+      const recentPriorityFees = await connection.getRecentPrioritizationFees();
+      const minFee = Math.min(...recentPriorityFees.map(fee => fee.prioritizationFee));
   
-      // const computeUnitPriceIx = anchor.web3.ComputeBudgetProgram.setComputeUnitPrice({
-      //   microLamports: 1,  // Lower fees for simulation
-      // });
+      const computeUnitPriceIx = ComputeBudgetProgram.setComputeUnitPrice({
+        microLamports: minFee + 1, 
+      });
 
       const blockhashContext = await connection.getLatestBlockhashAndContext();
   
@@ -106,7 +88,7 @@ export function useWinisolProgram() {
         feePayer: publicKey,
         blockhash: blockhashContext.value.blockhash,
         lastValidBlockHeight: blockhashContext.value.lastValidBlockHeight
-      }).add(InitConfigIx);
+      }).add(computeUnitLimitIx).add(computeUnitPriceIx).add(InitConfigIx);
   
       const signature = await sendTransaction(tx, connection, {skipPreflight: true});
 
@@ -116,7 +98,7 @@ export function useWinisolProgram() {
     },
     onSuccess: (signature) => {
       transactionToast("Initialized config", signature)
-      return accounts.refetch()
+      // return accounts.refetch()
     },
     onError: (error) =>{
       toast({
@@ -131,21 +113,11 @@ export function useWinisolProgram() {
   const initializeLimitedLotteryConfig = useMutation<string, Error, CreateLimitedLotteryInputArgs>({
     mutationKey: ['winisol', 'initialize-limited-lottery-config', { cluster }],
     mutationFn: async (data) =>{
-      if(!provider || !publicKey) {
-        toast({
-          title: 'Error',
-          description: 'Connect your wallet',
-          variant: 'destructive',
-        });
-        throw new Error("Provider or public key is missing");
+      if(!publicKey) {
+        throw new Error("Connect your wallet");
       }
         
       if(!token) {
-        toast({
-          title: 'Error',
-          description: 'Token not found',
-          variant: 'destructive',
-        });
         throw new Error("Token not found");
       }
       
@@ -162,22 +134,24 @@ export function useWinisolProgram() {
 
       const lottery_id = res.data.limitedLottery.id;
 
-    const InitConfigIx = await program.methods.initializeLimitedLotteryConfig(
-      lottery_id,
-      data.lotteryName, 
-      data.lotterySymbol,
-      data.lotteryURI,
-      new BN(data.price * LAMPORTS_PER_SOL),
-      data.totalTickets,
-    ).instruction();
+      const InitConfigIx = await program.methods.initializeLimitedLotteryConfig(
+        lottery_id,
+        data.lotteryName, 
+        data.lotterySymbol,
+        data.lotteryURI,
+        new BN(data.price * LAMPORTS_PER_SOL),
+        data.totalTickets,
+      ).instruction();
   
-      // const computeUnitLimitIx = anchor.web3.ComputeBudgetProgram.setComputeUnitLimit({
-      //   units: 5000,  // Adjust based on the program's complexity
-      // });
+      const computeUnitLimitIx = ComputeBudgetProgram.setComputeUnitLimit({
+        units: 22000,  
+      });
+      const recentPriorityFees = await connection.getRecentPrioritizationFees();
+      const minFee = Math.min(...recentPriorityFees.map(fee => fee.prioritizationFee));
   
-      // const computeUnitPriceIx = anchor.web3.ComputeBudgetProgram.setComputeUnitPrice({
-      //   microLamports: 1,  // Lower fees for simulation
-      // });
+      const computeUnitPriceIx = ComputeBudgetProgram.setComputeUnitPrice({
+        microLamports: minFee + 1, 
+      });
 
       const blockhashContext = await connection.getLatestBlockhashAndContext();
   
@@ -185,7 +159,7 @@ export function useWinisolProgram() {
         feePayer: publicKey,
         blockhash: blockhashContext.value.blockhash,
         lastValidBlockHeight: blockhashContext.value.lastValidBlockHeight
-      }).add(InitConfigIx);
+      }).add(computeUnitLimitIx).add(computeUnitPriceIx).add(InitConfigIx);
   
       const signature = await sendTransaction(tx, connection);
       console.log(signature);
@@ -195,7 +169,7 @@ export function useWinisolProgram() {
     },
     onSuccess: (signature) => {
       transactionToast("Initialized config", signature)
-      return accounts.refetch()
+      // return accounts.refetch()
     },
     onError: (error) =>{
       toast({
@@ -210,18 +184,16 @@ export function useWinisolProgram() {
   return {
     program,
     programId,
-    accounts,
-    getProgramAccount,
     initialize,
     initializeLimitedLotteryConfig
   }
 }
 
-export function useWinisolProgramAccount({ account }: { account: PublicKey }) {
+export function useWinisolProgramAccount() {
   const { cluster } = useCluster()
   // const transactionToast = useTransactionToast()
   const transactionToast = useWiniSolTransactionToast()
-  const { program, accounts } = useWinisolProgram()
+  const { program } = useWinisolProgram()
   const { connection } = useConnection()
   const { publicKey, sendTransaction } = useWallet();
   const provider = useAnchorProvider();
@@ -229,21 +201,15 @@ export function useWinisolProgramAccount({ account }: { account: PublicKey }) {
   const {token} = useAuth();
   const { toast } = useToast();
 
-  const accountQuery = useQuery({
-    queryKey: ['winisol', 'fetch', { cluster, account }],
-    queryFn: () => program.account.tokenLottery.fetch(account),
-  })
 
   const initializeLottery = useMutation<string, Error, LotteryArgs>({
-    mutationKey: ['winisol', 'initialize-lottery', { cluster, account }],
+    mutationKey: ['winisol', 'initialize-lottery', { cluster }],
     mutationFn: async ({lottery_id}) => {
       if(!token) {
-        toast({
-          title: 'Error',
-          description: 'Token not found',
-          variant: 'destructive',
-        });
         throw new Error("Token not found");
+      }
+      if(!publicKey) {
+        throw new Error("Connect your wallet");
       }
       const initLotteryIx = await program.methods.initializeLottery(lottery_id).accounts({
         tokenProgram: TOKEN_PROGRAM_ID,
@@ -269,19 +235,23 @@ export function useWinisolProgramAccount({ account }: { account: PublicKey }) {
       transactionToast("Initialized lottery", tx)
       // return accounts.refetch()
     },
+    onError: (error) => toast({
+      title: 'Error',
+      description: error.message || 'Failed to purchase ticket',
+      variant: 'destructive',
+    })
   })
 
   const initializeLimitedLottery = useMutation<string, Error, LotteryArgs>({
-    mutationKey: ['winisol', 'initialize-limited-lottery', { cluster, account }],
+    mutationKey: ['winisol', 'initialize-limited-lottery', { cluster }],
     mutationFn: async ({lottery_id}) => {
       if(!token) {
-        toast({
-          title: 'Error',
-          description: 'Token not found',
-          variant: 'destructive',
-        });
         throw new Error("Token not found");
       }
+      if(!publicKey) {
+        throw new Error("Connect your wallet");
+      }
+
       const initLotteryIx = await program.methods.initializeLimitedLottery(lottery_id).accounts({
         tokenProgram: TOKEN_PROGRAM_ID,
       }).instruction();
@@ -307,17 +277,17 @@ export function useWinisolProgramAccount({ account }: { account: PublicKey }) {
       transactionToast("Initialized lottery", tx)
       // return accounts.refetch()
     },
+    onError: (error) => toast({
+      title: 'Error',
+      description: error.message || 'Failed to purchase ticket',
+      variant: 'destructive',
+    })
   })
 
   const buyTicket = useMutation<string, Error, LotteryArgs>({
-    mutationKey: ['winisol', 'buy-ticket', { cluster, account }],
+    mutationKey: ['winisol', 'buy-ticket', { cluster }],
     mutationFn: async ({lottery_id}) => {
       if(!publicKey) {
-        toast({
-          title: 'Error',
-          description: 'Connect your wallet',
-          variant: 'destructive',
-        })
         throw new Error("Connect your wallet");
       }
 
@@ -325,9 +295,16 @@ export function useWinisolProgramAccount({ account }: { account: PublicKey }) {
         tokenProgram: TOKEN_PROGRAM_ID
       }).instruction();
   
-      const computeIx = web3.ComputeBudgetProgram.setComputeUnitLimit({units: 300000});
+      const computeUnitLimitIx = ComputeBudgetProgram.setComputeUnitLimit({
+        units: 300000,  
+      });
+      
+      const recentPriorityFees = await connection.getRecentPrioritizationFees();
+      const minFee = Math.min(...recentPriorityFees.map(fee => fee.prioritizationFee));
   
-      const prioriityIx = web3.ComputeBudgetProgram.setComputeUnitPrice({microLamports: 1});
+      const computeUnitPriceIx = ComputeBudgetProgram.setComputeUnitPrice({
+        microLamports: minFee + 1, 
+      });
   
       const blockhash = await connection.getLatestBlockhash();
   
@@ -335,16 +312,15 @@ export function useWinisolProgramAccount({ account }: { account: PublicKey }) {
         feePayer: publicKey,
         blockhash: blockhash.blockhash,
         lastValidBlockHeight: blockhash.lastValidBlockHeight
-      }).add(buyTicketIx)
-      .add(computeIx)
-      .add(prioriityIx);
+      }).add(computeUnitLimitIx)
+      .add(computeUnitPriceIx).add(buyTicketIx);
   
       const signature = await sendTransaction(tx, connection);
       try {
         await connection.confirmTransaction(signature, 'processed');
         // console.log("Transaction confirmed:", signature);
 
-        let res = await buyTicketSign(lottery_id, signature, publicKey?.toString());
+        await buyTicketSign(lottery_id, signature, publicKey?.toString());
   
         return signature;
       } catch (error) {
@@ -361,22 +337,17 @@ export function useWinisolProgramAccount({ account }: { account: PublicKey }) {
       transactionToast("Ticket purchased successfully" ,tx)
       // return accountQuery.refetch()
     },
-    onError: () => toast({
+    onError: (error) => toast({
       title: 'Error',
-      description: 'Failed to purchase ticket',
+      description: error.message || 'Failed to purchase ticket',
       variant: 'destructive',
     })
   })
 
   const buyLimitedLotteryTicket = useMutation<string, Error, LimitedLotteryArgs>({
-    mutationKey: ['winisol', 'buy-ticket', { cluster, account }],
+    mutationKey: ['winisol', 'buy-ticket', { cluster }],
     mutationFn: async ({lottery_id, ticket_number}) => {
       if(!publicKey) {
-        toast({
-          title: 'Error',
-          description: 'Connect your wallet',
-          variant: 'destructive',
-        })
         throw new Error("Connect your wallet");
       }
 
@@ -384,9 +355,16 @@ export function useWinisolProgramAccount({ account }: { account: PublicKey }) {
         tokenProgram: TOKEN_PROGRAM_ID
       }).instruction();
   
-      const computeIx = web3.ComputeBudgetProgram.setComputeUnitLimit({units: 300000});
+      const computeUnitLimitIx = ComputeBudgetProgram.setComputeUnitLimit({
+        units: 300000,  
+      });
+      
+      const recentPriorityFees = await connection.getRecentPrioritizationFees();
+      const minFee = Math.min(...recentPriorityFees.map(fee => fee.prioritizationFee));
   
-      const prioriityIx = web3.ComputeBudgetProgram.setComputeUnitPrice({microLamports: 1});
+      const computeUnitPriceIx = ComputeBudgetProgram.setComputeUnitPrice({
+        microLamports: minFee + 1, 
+      });
   
       const blockhash = await connection.getLatestBlockhash();
   
@@ -394,9 +372,8 @@ export function useWinisolProgramAccount({ account }: { account: PublicKey }) {
         feePayer: publicKey,
         blockhash: blockhash.blockhash,
         lastValidBlockHeight: blockhash.lastValidBlockHeight
-      }).add(buyTicketIx)
-      .add(computeIx)
-      .add(prioriityIx);
+      }).add(computeUnitLimitIx)
+      .add(computeUnitPriceIx).add(buyTicketIx);
   
       const signature = await sendTransaction(tx, connection, {skipPreflight: true});
       console.log(signature);
@@ -405,7 +382,7 @@ export function useWinisolProgramAccount({ account }: { account: PublicKey }) {
         await connection.confirmTransaction(signature, 'processed');
         // console.log("Transaction confirmed:", signature);
 
-        let res = await buyLimitedLotteryTicketSign(lottery_id, signature, publicKey?.toString());
+        await buyLimitedLotteryTicketSign(lottery_id, signature, publicKey?.toString());
   
         return signature;
       } catch (error) {
@@ -422,31 +399,21 @@ export function useWinisolProgramAccount({ account }: { account: PublicKey }) {
       transactionToast("Ticket purchased successfully" ,tx)
       // return accountQuery.refetch()
     },
-    onError: () => toast({
+    onError: (error) => toast({
       title: 'Error',
-      description: 'Failed to purchase ticket',
+      description: error.message || 'Failed to purchase ticket',
       variant: 'destructive',
     })
   })
 
 
   const createRandomness = useMutation<string, Error, LotteryArgs>({
-    mutationKey: ['winisol', 'buy-ticket', { cluster, account }],
+    mutationKey: ['winisol', 'buy-ticket', { cluster }],
     mutationFn: async ({lottery_id}) => {
       if(!token) {
-        toast({
-          title: 'Error',
-          description: 'Token not found',
-          variant: 'destructive',
-        })
         throw new Error("Token not found...");
       }
       if(!publicKey) {
-        toast({
-          title: 'Error',
-          description: 'Connect your wallet',
-          variant: 'destructive',
-        });
         throw new Error("Connect your wallet")
       }
       const rngKp = web3.Keypair.generate();
@@ -496,30 +463,20 @@ export function useWinisolProgramAccount({ account }: { account: PublicKey }) {
       transactionToast("Randomness created", tx)
       // return accountQuery.refetch()
     },
-    onError: () => toast({
+    onError: (error) => toast({
       title: 'Error',
-      description: 'Failed to create randomness',
+      description: error.message || 'Failed to create randomness',
       variant: 'destructive',
     })
   })
 
   const createLimitedLotteryRandomness = useMutation<string, Error, LotteryArgs>({
-    mutationKey: ['winisol', 'buy-ticket', { cluster, account }],
+    mutationKey: ['winisol', 'buy-ticket', { cluster }],
     mutationFn: async ({lottery_id}) => {
       if(!token) {
-        toast({
-          title: 'Error',
-          description: 'Token not found',
-          variant: 'destructive',
-        })
         throw new Error("Token not found...");
       }
       if(!publicKey) {
-        toast({
-          title: 'Error',
-          description: 'Connect your wallet',
-          variant: 'destructive',
-        });
         throw new Error("Connect your wallet")
       }
       const rngKp = web3.Keypair.generate();
@@ -569,33 +526,23 @@ export function useWinisolProgramAccount({ account }: { account: PublicKey }) {
       transactionToast("Randomness created", tx)
       // return accountQuery.refetch()
     },
-    onError: () => toast({
+    onError: (error) => toast({
       title: 'Error',
-      description: 'Failed to create randomness',
+      description: error.message || 'Failed to create randomness',
       variant: 'destructive',
     })
   })
 
   const commitRandmoness = useMutation<string, Error, LotteryArgs>({
-    mutationKey: ['winisol', 'commit-randomness', { cluster, account }],
+    mutationKey: ['winisol', 'commit-randomness', { cluster }],
     mutationFn: async ({lottery_id}) => {
         if(!token) {
-          toast({
-            title: 'Error',
-            description: 'Token not found',
-            variant: 'destructive',
-          })
           throw new Error("Token not found...");
         }
 
         const res = await getRandomnessKeys(lottery_id, token);
 
         if(!res?.data?.success || !res?.data?.randomnessKeys?.sbRandomnessPubKey || !res?.data?.randomnessKeys?.sbQueuePubKey) {
-          toast({
-            title: 'Error',
-            description: 'Failed to get randomness keys',
-            variant: 'destructive',
-          })
           throw new Error("Failed to get randomness keys");
         }
         const sbRandomnessPubkey = res.data.randomnessKeys.sbRandomnessPubKey;
@@ -642,34 +589,24 @@ export function useWinisolProgramAccount({ account }: { account: PublicKey }) {
       transactionToast("Commited randomness", tx)
       // return accountQuery.refetch()
     },
-    onError: () => toast({
+    onError: (error) => toast({
       title: 'Error',
-      description: 'Failed to commit randomness',
+      description: error.message || 'Failed to commit randomness',
       variant: 'destructive',
     }),
   })
 
 
   const commitLimitedLotteryRandmoness = useMutation<string, Error, LotteryArgs>({
-    mutationKey: ['winisol', 'commit-limited-lottery-randomness', { cluster, account }],
+    mutationKey: ['winisol', 'commit-limited-lottery-randomness', { cluster }],
     mutationFn: async ({lottery_id}) => {
         if(!token) {
-          toast({
-            title: 'Error',
-            description: 'Token not found',
-            variant: 'destructive',
-          })
           throw new Error("Token not found...");
         }
 
         const res = await getLimitedLotteryRandomnessKeys(lottery_id, token);
 
         if(!res?.data?.success || !res?.data?.randomnessKeys?.sbRandomnessPubKey || !res?.data?.randomnessKeys?.sbQueuePubKey) {
-          toast({
-            title: 'Error',
-            description: 'Failed to get randomness keys',
-            variant: 'destructive',
-          })
           throw new Error("Failed to get randomness keys");
         }
         const sbRandomnessPubkey = res.data.randomnessKeys.sbRandomnessPubKey;
@@ -690,12 +627,15 @@ export function useWinisolProgramAccount({ account }: { account: PublicKey }) {
           randomnessAccount: randomnessAccount.pubkey
         }).instruction();
     
-        const commitComputeIx = web3.ComputeBudgetProgram.setComputeUnitLimit({
-          units: 100000
+        const computeUnitLimitIx = ComputeBudgetProgram.setComputeUnitLimit({
+          units: 50000,  
         });
+        
+        const recentPriorityFees = await connection.getRecentPrioritizationFees();
+        const minFee = Math.min(...recentPriorityFees.map(fee => fee.prioritizationFee));
     
-        const commitPriorityIx = web3.ComputeBudgetProgram.setComputeUnitPrice({
-          microLamports: 1,
+        const computeUnitPriceIx = ComputeBudgetProgram.setComputeUnitPrice({
+          microLamports: minFee + 1, 
         });
     
         const commitBlockhashWithContext = await provider.connection.getLatestBlockhash();
@@ -703,8 +643,8 @@ export function useWinisolProgramAccount({ account }: { account: PublicKey }) {
           feePayer: provider.wallet.publicKey,
           blockhash: commitBlockhashWithContext.blockhash,
           lastValidBlockHeight: commitBlockhashWithContext.lastValidBlockHeight
-        }).add(commitComputeIx)
-        .add(commitPriorityIx)
+        }).add(computeUnitLimitIx)
+        .add(computeUnitPriceIx)
         .add(sbCommitIx)
         .add(commitIx);
     
@@ -717,9 +657,9 @@ export function useWinisolProgramAccount({ account }: { account: PublicKey }) {
       transactionToast("Commited randomness", tx)
       // return accountQuery.refetch()
     },
-    onError: () => toast({
+    onError: (error) => toast({
       title: 'Error',
-      description: 'Failed to commit randomness',
+      description: error.message || 'Failed to commit randomness',
       variant: 'destructive',
     }),
   })
@@ -727,23 +667,13 @@ export function useWinisolProgramAccount({ account }: { account: PublicKey }) {
 
   // Reveal winner 
   const revealWinner = useMutation<string, Error, LotteryArgs>({
-    mutationKey: ['winisol', 'reveal-winner', { cluster, account }],
+    mutationKey: ['winisol', 'reveal-winner', { cluster }],
     mutationFn: async ({lottery_id}) => {
       if(!token) {
-        toast({
-          title: 'Error',
-          description: 'Token not found',
-          variant: 'destructive',
-        });
         throw new Error("Token not found...");
       }
       const res = await getRandomnessKeys(lottery_id, token);
       if(!res?.data?.success || !res?.data?.randomnessKeys?.sbRandomnessPubKey || !res?.data?.randomnessKeys?.sbQueuePubKey) {
-        toast({
-          title: 'Error',
-          description: 'Failed to get randomness keys',
-          variant: 'destructive',
-        })
         throw new Error("Failed to get randomness keys");
       }
       const sbRandomnessPubkey = res.data.randomnessKeys.sbRandomnessPubKey;
@@ -807,7 +737,7 @@ export function useWinisolProgramAccount({ account }: { account: PublicKey }) {
     onError: (error) => {
       toast({
         title: 'Error',
-        description: 'Failed to reveal winner',
+        description: error.message || 'Failed to reveal winner',
         variant: 'destructive',
       })
       console.log(error);
@@ -816,23 +746,13 @@ export function useWinisolProgramAccount({ account }: { account: PublicKey }) {
 
 
   const revealLimitedLotteryWinner = useMutation<string, Error, LotteryArgs>({
-    mutationKey: ['winisol', 'reveal-limited-lottery-winner', { cluster, account }],
+    mutationKey: ['winisol', 'reveal-limited-lottery-winner', { cluster }],
     mutationFn: async ({lottery_id}) => {
       if(!token) {
-        toast({
-          title: 'Error',
-          description: 'Token not found',
-          variant: 'destructive',
-        });
         throw new Error("Token not found...");
       }
       const res = await getLimitedLotteryRandomnessKeys(lottery_id, token);
       if(!res?.data?.success || !res?.data?.randomnessKeys?.sbRandomnessPubKey || !res?.data?.randomnessKeys?.sbQueuePubKey) {
-        toast({
-          title: 'Error',
-          description: 'Failed to get randomness keys',
-          variant: 'destructive',
-        })
         throw new Error("Failed to get randomness keys");
       }
       const sbRandomnessPubkey = res.data.randomnessKeys.sbRandomnessPubKey;
@@ -896,7 +816,7 @@ export function useWinisolProgramAccount({ account }: { account: PublicKey }) {
     onError: (error) => {
       toast({
         title: 'Error',
-        description: 'Failed to reveal winner',
+        description: error.message || 'Failed to reveal winner',
         variant: 'destructive',
       })
       console.log(error);
@@ -905,32 +825,36 @@ export function useWinisolProgramAccount({ account }: { account: PublicKey }) {
   
 
   const claimWinnings = useMutation<string, Error, LotteryArgs>({
-    mutationKey: ['winisol', 'claim-prize', { cluster, account }],
+    mutationKey: ['winisol', 'claim-prize', { cluster }],
     mutationFn: async ({lottery_id}) => {
       if(!publicKey){
-        toast({
-          title: 'Error',
-          description: 'Connect your wallet',
-          variant: 'destructive',
-        });
         throw new Error("Connect your wallet")
       }
       const calimIx = await program.methods.claimWinnings(lottery_id).accounts({
         tokenProgram: TOKEN_PROGRAM_ID,
       }).instruction();
+
+      const computeUnitLimitIx = ComputeBudgetProgram.setComputeUnitLimit({
+        units: 60000,  
+      });
+      
+      const recentPriorityFees = await connection.getRecentPrioritizationFees();
+      const minFee = Math.min(...recentPriorityFees.map(fee => fee.prioritizationFee));
+  
+      const computeUnitPriceIx = ComputeBudgetProgram.setComputeUnitPrice({
+        microLamports: minFee + 1, 
+      });
   
       const claimBlockhashWithContext = await provider.connection.getLatestBlockhash();
       const claimTx = new web3.Transaction({
         feePayer: provider.wallet.publicKey,
         blockhash: claimBlockhashWithContext.blockhash,
         lastValidBlockHeight: claimBlockhashWithContext.lastValidBlockHeight
-      }).add(calimIx);
+      }).add(computeUnitLimitIx).add(computeUnitPriceIx).add(calimIx);
   
       const claimSignature = await sendTransaction(claimTx, provider.connection);
   
       console.log("claim signature: ", claimSignature);
-
-      
 
       try {
         await connection.confirmTransaction(claimSignature, 'processed');
@@ -952,36 +876,42 @@ export function useWinisolProgramAccount({ account }: { account: PublicKey }) {
       transactionToast("Winning claimed", tx)
       // return accountQuery.refetch()
     },
-    onError: () => toast({
+    onError: (error) => toast({
       title: 'Error',
-      description: 'Failed to claim winnings',
+      description: error.message || 'Failed to claim winnings',
       variant: 'destructive',
     })
   })
 
   const claimLimitedLotteryWinnings = useMutation<string, Error, LotteryArgs>({
-    mutationKey: ['winisol', 'claim-limited-lottery-winnings', { cluster, account }],
+    mutationKey: ['winisol', 'claim-limited-lottery-winnings', { cluster }],
     mutationFn: async ({lottery_id}) => {
       if(!publicKey){
-        toast({
-          title: 'Error',
-          description: 'Connect your wallet',
-          variant: 'destructive',
-        });
         throw new Error("Connect your wallet")
       }
       const calimIx = await program.methods.claimLimitedLotteryWinnings(lottery_id).accounts({
         tokenProgram: TOKEN_PROGRAM_ID,
       }).instruction();
+
+      const computeUnitLimitIx = ComputeBudgetProgram.setComputeUnitLimit({
+        units: 60000,  
+      });
+      
+      const recentPriorityFees = await connection.getRecentPrioritizationFees();
+      const minFee = Math.min(...recentPriorityFees.map(fee => fee.prioritizationFee));
+  
+      const computeUnitPriceIx = ComputeBudgetProgram.setComputeUnitPrice({
+        microLamports: minFee + 1, 
+      });
   
       const claimBlockhashWithContext = await provider.connection.getLatestBlockhash();
       const claimTx = new web3.Transaction({
         feePayer: provider.wallet.publicKey,
         blockhash: claimBlockhashWithContext.blockhash,
         lastValidBlockHeight: claimBlockhashWithContext.lastValidBlockHeight
-      }).add(calimIx);
+      }).add(computeUnitLimitIx).add(computeUnitPriceIx).add(calimIx);
   
-      const claimSignature = await sendTransaction(claimTx, provider.connection, {skipPreflight: true});
+      const claimSignature = await sendTransaction(claimTx, provider.connection);
   
       console.log("claim signature: ", claimSignature);
 
@@ -1005,30 +935,20 @@ export function useWinisolProgramAccount({ account }: { account: PublicKey }) {
       transactionToast("Winning claimed", tx)
       // return accountQuery.refetch()
     },
-    onError: () => toast({
+    onError: (error) => toast({
       title: 'Error',
-      description: 'Failed to claim winnings',
+      description: error.message || 'Failed to claim winnings',
       variant: 'destructive',
     })
   })
 
   const authorityTransfer = useMutation<string, Error, LotteryArgs>({
-    mutationKey: ['winisol', 'authority-transfer', { cluster, account }],
+    mutationKey: ['winisol', 'authority-transfer', { cluster }],
     mutationFn: async ({lottery_id}) => {
       if(!token) {
-        toast({
-          title: 'Error',
-          description: 'Token not found',
-          variant: 'destructive',
-        })
         throw new Error("Token not found...");
       }
       if(!publicKey){
-        toast({
-          title: 'Error',
-          description: 'Connect your wallet',
-          variant: 'destructive',
-        })
         throw new Error("Connect your wallet")
       }
       const authorityTransferIx = await program.methods.transferToAuthority(lottery_id).accounts({
@@ -1053,30 +973,20 @@ export function useWinisolProgramAccount({ account }: { account: PublicKey }) {
       transactionToast("Transfer to authority successfully", tx)
       // return accountQuery.refetch()
     },
-    onError: () => toast({
+    onError: (error) => toast({
       title: 'Error',
-      description: 'Failed to transfer authority',
+      description: error.message || 'Failed to transfer authority',
       variant: 'destructive',
     })
   })
 
   const authorityLimitedLotteryTransfer = useMutation<string, Error, LotteryArgs>({
-    mutationKey: ['winisol', 'authority-limited-lottery-transfer', { cluster, account }],
+    mutationKey: ['winisol', 'authority-limited-lottery-transfer', { cluster }],
     mutationFn: async ({lottery_id}) => {
       if(!token) {
-        toast({
-          title: 'Error',
-          description: 'Token not found',
-          variant: 'destructive',
-        })
-        throw new Error("Token not found...");
+        throw new Error("Token not found");
       }
       if(!publicKey){
-        toast({
-          title: 'Error',
-          description: 'Connect your wallet',
-          variant: 'destructive',
-        })
         throw new Error("Connect your wallet")
       }
       const authorityTransferIx = await program.methods.limitedLotteryTransferToAuthority(lottery_id).accounts({
@@ -1101,9 +1011,9 @@ export function useWinisolProgramAccount({ account }: { account: PublicKey }) {
       transactionToast("Transfer to authority successfully", tx)
       // return accountQuery.refetch()
     },
-    onError: () => toast({
+    onError: (error) => toast({
       title: 'Error',
-      description: 'Failed to transfer authority',
+      description: error.message || 'Failed to transfer authority',
       variant: 'destructive',
     })
   })

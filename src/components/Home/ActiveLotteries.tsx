@@ -7,12 +7,10 @@ import LotteryCard, { ShimmerCard } from "../ui/common/Card/LotteryCard";
 import lotterySide1 from "@/assets/lottery-side-1.png";
 import lotterySide2 from "@/assets/lottery-side-2.png";
 import { useSelector } from "react-redux";
-import { Button } from "../ui/button";
-import { PublicKey } from "@solana/web3.js";
-import { useWinisolProgramAccount } from "../winisol/winisol-data-access";
 import LimitedLotteryCard from "../ui/common/Card/LimitedLotteryCard";
 import tag from "@/assets/tag.png";
 import { RootState } from "@/redux/store";
+import { LimitedLottery } from "@/types";
 
 export default function ActiveLotteries() {
   const { lotteries, isLotteriesLoading } = useSelector(
@@ -21,15 +19,16 @@ export default function ActiveLotteries() {
   const { limitedLotteries, isLimitedLotteriesLoading } = useSelector(
     (state: RootState) => state.limitedLotteries
   );
-  const { initializeLimitedLottery, buyLimitedLotteryTicket } =
-    useWinisolProgramAccount({
-      account: new PublicKey("FKKVUnKqXHtHZEivpK4saiDF8pwV9Q67RiFGwBLxNvEY"),
-    });
   const currentTime = new Date().getTime() / 1000;
 
   const filteredLotteries = lotteries.filter((lottery: any) => {
     return lottery.endTime > currentTime && lottery.initializeLotterySignature;
   });
+
+  const filteredLimitedLotteries = limitedLotteries.filter((lottery: LimitedLottery) => {
+      return lottery.numberOfTicketSold < lottery.totalTickets && lottery.initializeLotterySignature;
+    }
+  );
 
   return (
     <div
@@ -81,7 +80,7 @@ export default function ActiveLotteries() {
               </div>
             ))}
           </div>
-        ) : filteredLotteries.length === 0 && limitedLotteries.length === 0 ? (
+        ) : filteredLotteries.length === 0 && filteredLimitedLotteries.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-4 w-full h-40 lg:m-8">
             <h3 className="text-2xl font-semibold">No Active Lotteries</h3>
             <p className="text-center max-w-5xl">
@@ -116,7 +115,7 @@ export default function ActiveLotteries() {
               </div>
             )}
 
-            {limitedLotteries.length > 0 && (
+            {filteredLimitedLotteries.length > 0 && (
               <div className="mx-2 my-8 lg:m-8 flex flex-col gap-8">
                 <div className="flex gap-2 items-center justify-start bg-gradient-to-r from-[#00815E] to-[#0E0E0E00] w-fit p-2 rounded-md">
                   <Image
@@ -129,7 +128,7 @@ export default function ActiveLotteries() {
                   <h3 className="text-lg font-semibold">Limited Lotteries</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 xl:gap-16  ">
-                  {limitedLotteries?.map((data: any, i: number) => (
+                  {filteredLimitedLotteries?.map((data: any, i: number) => (
                     <div
                       key={i}
                       className="flex items-center justify-center w-full"

@@ -9,17 +9,20 @@ import Link from 'next/link'
 import { useDispatch, useSelector } from 'react-redux';
 import { setCurrentWinnings, setPreviousWinnings, setIsLoading } from "@/redux/slices/winningsSlice"; 
 import { setLotteries, setIsLotteriesLoading } from "@/redux/slices/lotteriesSlice"; 
-import { getAllLotteries, getWinningsByPublicKey } from '@/services/lotteryService';
+import { getAllLotteries } from '@/services/lotteryService';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { Toaster as WiniSolToast } from "@/components/ui/toaster"
 import { useToast } from '@/hooks/use-toast'
 import { ExternalLink } from 'lucide-react'
 import { setIsLimitedLotteriesLoading, setLimitedLotteries } from '@/redux/slices/limitedLotterySlice'
 import { getAllLimitedLottery } from '@/services/limitedLotteryService'
+import { getAllRecentWinners, getWinningsByPublicKey } from '@/services/commonLotteryService'
+import { RootState } from '@/redux/store'
+import { setIsWinnersLoading, setTotalWinners, setWinners } from '@/redux/slices/recentWinnersSlice'
 
 export function Layout({ children }: { children: ReactNode }) {
   const dispatch = useDispatch(); // Get dispatch from the hook
-  const { currentWinnings } = useSelector((state: any) => state.winnings);
+  const { currentWinnings } = useSelector((state: RootState) => state.winnings);
   const { publicKey } = useWallet();
 
 
@@ -32,9 +35,10 @@ export function Layout({ children }: { children: ReactNode }) {
         }
         dispatch(setIsLoading(true)); 
         const winningsData = await getWinningsByPublicKey(publicKey.toString());
+        console.log("winning data: ", winningsData);
 
-        dispatch(setCurrentWinnings(winningsData.data.currentWinnings.lotteries));
-        dispatch(setPreviousWinnings(winningsData.data.previousWinnings.lotteries));
+        dispatch(setCurrentWinnings(winningsData.data.currentWinnings));
+        dispatch(setPreviousWinnings(winningsData.data.previousWinnings));
         dispatch(setIsLoading(false)); 
       } catch (error) {
         console.error("Error fetching winnings:", error);
@@ -80,6 +84,25 @@ export function Layout({ children }: { children: ReactNode }) {
 
     fetchLimitedLotteries();
   }, [dispatch]);
+
+  useEffect(() => {
+    const fetchRecentWinners = async () => {
+      try {
+        dispatch(setIsWinnersLoading(true)); 
+        const winnersData = await getAllRecentWinners();
+
+
+        dispatch(setWinners(winnersData.data.winners));
+        dispatch(setTotalWinners(winnersData.data.total));
+        dispatch(setIsWinnersLoading(false)); 
+      } catch (error) {
+        console.error("Error fetching winnings:", error);
+        dispatch(setIsWinnersLoading(false)); 
+      }
+    };
+
+    fetchRecentWinners();
+  }, [dispatch])
   
   return (
     <div className="flex flex-col" >
@@ -90,7 +113,7 @@ export function Layout({ children }: { children: ReactNode }) {
             🚀 Running on Devnet | Mainnet Solana Launch Incoming! Stay Tuned 🔥  
           </div>
         )}
-        {currentWinnings.length > 0 && <div className='w-full bg-primary text-black flex items-center justify-center py-3 gap-2 px-16'>
+        {currentWinnings?.length > 0 && <div className='w-full bg-primary text-black flex items-center justify-center py-3 gap-2 px-16'>
           <h2 className='text-lg'>Congratulations 🎉 you have won the lottery</h2> 
           <Link href='/claim-winnings' className='text-lg font-bold'>Claim Winnings</Link>
         </div>}
