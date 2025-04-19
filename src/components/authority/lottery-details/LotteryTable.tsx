@@ -47,15 +47,15 @@ const LotteryTable: React.FC<LotteryTableProps> = ({ lottery, lotteryType }) => 
           </TableRow>
           {lotteryType === "regular" && <TableRow>
             <TableCell>Start Time</TableCell>
-            <TableCell>{new Date(lottery?.startTime * 1000).toLocaleString()}</TableCell>
+            <TableCell>{lotteryType === "regular" && lottery ? new Date((lottery as Lottery).startTime * 1000).toLocaleString() : "N/A"}</TableCell>
           </TableRow>}
           {lotteryType === "regular" && <TableRow>
             <TableCell>End Time</TableCell>
-            <TableCell>{new Date(lottery?.endTime * 1000).toLocaleString()}</TableCell>
+            <TableCell>{lotteryType === "regular" && lottery ? new Date((lottery as Lottery).endTime * 1000).toLocaleString() : "N/A"}</TableCell>
           </TableRow>}
           {lotteryType === "limited" && <TableRow>
             <TableCell>Number of ticket sold</TableCell>
-            <TableCell>{lottery?.numberOfTicketSold}</TableCell>
+            <TableCell>{lotteryType === "limited" && (lottery as LimitedLottery)?.numberOfTicketSold}</TableCell>
           </TableRow>}
           <TableRow>
             <TableCell>Price</TableCell>
@@ -63,7 +63,7 @@ const LotteryTable: React.FC<LotteryTableProps> = ({ lottery, lotteryType }) => 
           </TableRow>
           <TableRow>
             <TableCell>Pot Amount</TableCell>
-            <TableCell>{(lotteryType==="regular" ? lottery?.potAmount : lottery.totalPotAmount) / LAMPORTS_PER_SOL} SOL</TableCell>
+            <TableCell>{(lotteryType === "regular" ? (lottery as Lottery)?.potAmount : (lottery as LimitedLottery)?.totalPotAmount) / LAMPORTS_PER_SOL} SOL</TableCell>
           </TableRow>
           <TableRow>
             <TableCell>Total Tickets</TableCell>
