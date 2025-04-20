@@ -98,7 +98,7 @@ export default function CreateLimitedLottery() {
       </div>
 
       <div className="flex flex-col gap-3">
-          <Label htmlFor="totalTickets" className="text-[#C8C8C8] font-light">Price</Label>
+          <Label htmlFor="totalTickets" className="text-[#C8C8C8] font-light">Total Tickets</Label>
           <Input id="totalTickets" placeholder="Total Tickets" className="bg-[#1A1A1A] py-5" {...register("totalTickets")} />
           {errors.totalTickets && (
             <p className="text-red-500 text-sm">{errors.totalTickets.message}</p>

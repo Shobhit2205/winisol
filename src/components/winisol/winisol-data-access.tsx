@@ -9,14 +9,14 @@ import { useCluster } from '../cluster/cluster-data-access'
 import { useAnchorProvider } from '../solana/solana-provider'
 import { useAuth } from '@/contexts/AuthContext'
 import { CreateLotteryInputArgs } from '../authority/dashboard/CreateLottery'
-import { authorityTransferSign, buyTicketSign, claimWinningsSign, commitRandomnessSign, createLottery, createRandomnessSign, getRandomnessKeys, initializeConfig, initializeLotterySign, revealWinnerSign } from '@/services/lotteryService'
+import { authorityTransferSign, buyTicketSign, claimWinningsSign, commitRandomnessSign, createLottery, createRandomnessSign, deleteLottery, getRandomnessKeys, initializeConfig, initializeLotterySign, revealWinnerSign } from '@/services/lotteryService'
 import { BN, Idl, Program, web3 } from '@coral-xyz/anchor';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import * as sb from '@switchboard-xyz/on-demand'
 import { useWiniSolTransactionToast } from '../ui/layouts/Layout';
 import { useToast } from '@/hooks/use-toast';
 import { CreateLimitedLotteryInputArgs } from '../authority/dashboard/CreateLimitedLottery';
-import { buyLimitedLotteryTicketSign, claimLimitedLotteryWinningsSign, commitLimitedLotteryRandomnessSign, createLimitedLottery, createLimitedLotteryRandomnessSign, getLimitedLotteryRandomnessKeys, initializeLimitedLotteryConfigSign, initializeLimitedLotterySign, limitedLotteryAuthorityTransferSign, revealLimitedLotteryWinnerSign } from '@/services/limitedLotteryService';
+import { buyLimitedLotteryTicketSign, claimLimitedLotteryWinningsSign, commitLimitedLotteryRandomnessSign, createLimitedLottery, createLimitedLotteryRandomnessSign, deleteLimitedLottery, getLimitedLotteryRandomnessKeys, initializeLimitedLotteryConfigSign, initializeLimitedLotterySign, limitedLotteryAuthorityTransferSign, revealLimitedLotteryWinnerSign } from '@/services/limitedLotteryService';
 
 interface LotteryArgs {
   lottery_id: number,
@@ -40,61 +40,78 @@ export function useWinisolProgram() {
   const initialize = useMutation<string, Error, CreateLotteryInputArgs>({
     mutationKey: ['tokenlottery', 'initialize-config', { cluster }],
     mutationFn: async (data) =>{
-      if(!publicKey) {
-        throw new Error("Provider or public key is missing");
-      }
+      let lottery_id = null;
+      try {
+        if(!publicKey) {
+          throw new Error("Provider or public key is missing");
+        }
+          
+        if(!token) {
+          throw new Error("Token not found");
+        }
         
-      if(!token) {
-        throw new Error("Token not found");
+        const res = await createLottery(data, token);
+  
+        if (!res?.data?.success || !res?.data?.lottery?.id) {
+          toast({
+            title: 'Error',
+            description: 'Failed to create lottery',
+            variant: 'destructive',
+          })
+          throw new Error("API call failed");
+        }
+  
+        lottery_id = res.data.lottery.id;
+  
+        const InitConfigIx = await program.methods.initializeConfig(
+          lottery_id,
+          data.lotteryName, 
+          data.lotterySymbol,
+          data.lotteryURI,
+          new Date(data.startTime).getTime() / 1000, // Convert to UNIX timestamp
+          new Date(data.endTime).getTime() / 1000,
+          new BN(data.price * LAMPORTS_PER_SOL),
+        ).instruction();
+    
+        const computeUnitLimitIx = ComputeBudgetProgram.setComputeUnitLimit({
+          units: 40000,  
+        });
+        
+        const recentPriorityFees = await connection.getRecentPrioritizationFees();
+        const minFee = Math.min(...recentPriorityFees.map(fee => fee.prioritizationFee));
+    
+        const computeUnitPriceIx = ComputeBudgetProgram.setComputeUnitPrice({
+          microLamports: minFee + 1, 
+        });
+  
+        const blockhashContext = await connection.getLatestBlockhashAndContext();
+    
+        const tx = new Transaction({
+          feePayer: publicKey,
+          blockhash: blockhashContext.value.blockhash,
+          lastValidBlockHeight: blockhashContext.value.lastValidBlockHeight
+        }).add(computeUnitLimitIx).add(computeUnitPriceIx).add(InitConfigIx);
+    
+        const signature = await sendTransaction(tx, connection);
+  
+        await initializeConfig(lottery_id, signature, token);
+  
+        return signature;
+      } catch (error) {
+        if (lottery_id) {
+          try {
+            if(!token) {
+              throw new Error("Token not found");
+            }
+            await deleteLottery(lottery_id, token);
+            console.log(`Lottery ${lottery_id} was deleted due to initialization failure`);
+          } catch (deleteError) {
+            console.error(`Failed to delete lottery ${lottery_id}:`, deleteError);
+          }
+        }
+        throw error;
       }
       
-      const res = await createLottery(data, token);
-
-      if (!res?.data?.success || !res?.data?.lottery?.id) {
-        toast({
-          title: 'Error',
-          description: 'Failed to create lottery',
-          variant: 'destructive',
-        })
-        throw new Error("API call failed");
-      }
-
-      const lottery_id = res.data.lottery.id;
-
-      const InitConfigIx = await program.methods.initializeConfig(
-        lottery_id,
-        data.lotteryName, 
-        data.lotterySymbol,
-        data.lotteryURI,
-        new Date(data.startTime).getTime() / 1000, // Convert to UNIX timestamp
-        new Date(data.endTime).getTime() / 1000,
-        new BN(data.price * LAMPORTS_PER_SOL),
-      ).instruction();
-  
-      const computeUnitLimitIx = ComputeBudgetProgram.setComputeUnitLimit({
-        units: 22000,  
-      });
-      
-      const recentPriorityFees = await connection.getRecentPrioritizationFees();
-      const minFee = Math.min(...recentPriorityFees.map(fee => fee.prioritizationFee));
-  
-      const computeUnitPriceIx = ComputeBudgetProgram.setComputeUnitPrice({
-        microLamports: minFee + 1, 
-      });
-
-      const blockhashContext = await connection.getLatestBlockhashAndContext();
-  
-      const tx = new Transaction({
-        feePayer: publicKey,
-        blockhash: blockhashContext.value.blockhash,
-        lastValidBlockHeight: blockhashContext.value.lastValidBlockHeight
-      }).add(computeUnitLimitIx).add(computeUnitPriceIx).add(InitConfigIx);
-  
-      const signature = await sendTransaction(tx, connection, {skipPreflight: true});
-
-      await initializeConfig(lottery_id, signature, token);
-
-      return signature;
     },
     onSuccess: (signature) => {
       transactionToast("Initialized config", signature)
@@ -113,59 +130,76 @@ export function useWinisolProgram() {
   const initializeLimitedLotteryConfig = useMutation<string, Error, CreateLimitedLotteryInputArgs>({
     mutationKey: ['winisol', 'initialize-limited-lottery-config', { cluster }],
     mutationFn: async (data) =>{
-      if(!publicKey) {
-        throw new Error("Connect your wallet");
-      }
+      let lottery_id = null;
+      try {
+        if(!publicKey) {
+          throw new Error("Connect your wallet");
+        }
+          
+        if(!token) {
+          throw new Error("Token not found");
+        }
         
-      if(!token) {
-        throw new Error("Token not found");
+        const res = await createLimitedLottery(data, token);
+  
+        if (!res?.data?.success || !res?.data?.limitedLottery?.id) {
+          toast({
+            title: 'Error',
+            description: 'Failed to create lottery',
+            variant: 'destructive',
+          })
+          throw new Error("API call failed");
+        }
+  
+        lottery_id = res.data.limitedLottery.id;
+  
+        const InitConfigIx = await program.methods.initializeLimitedLotteryConfig(
+          lottery_id,
+          data.lotteryName, 
+          data.lotterySymbol,
+          data.lotteryURI,
+          new BN(data.price * LAMPORTS_PER_SOL),
+          data.totalTickets,
+        ).instruction();
+    
+        const computeUnitLimitIx = ComputeBudgetProgram.setComputeUnitLimit({
+          units: 40000,  
+        });
+        const recentPriorityFees = await connection.getRecentPrioritizationFees();
+        const minFee = Math.min(...recentPriorityFees.map(fee => fee.prioritizationFee));
+    
+        const computeUnitPriceIx = ComputeBudgetProgram.setComputeUnitPrice({
+          microLamports: minFee + 1, 
+        });
+  
+        const blockhashContext = await connection.getLatestBlockhashAndContext();
+    
+        const tx = new Transaction({
+          feePayer: publicKey,
+          blockhash: blockhashContext.value.blockhash,
+          lastValidBlockHeight: blockhashContext.value.lastValidBlockHeight
+        }).add(computeUnitLimitIx).add(computeUnitPriceIx).add(InitConfigIx);
+    
+        const signature = await sendTransaction(tx, connection);
+        console.log(signature);
+        await initializeLimitedLotteryConfigSign(lottery_id, signature, token);
+  
+        return signature;
+      } catch (error) {
+        if (lottery_id) {
+          try {
+            if(!token) {
+              throw new Error("Token not found");
+            }
+            await deleteLimitedLottery(lottery_id, token);
+            console.log(`Lottery ${lottery_id} was deleted due to initialization failure`);
+          } catch (deleteError) {
+            console.error(`Failed to delete lottery ${lottery_id}:`, deleteError);
+          }  
+        }
+        throw error;
       }
       
-      const res = await createLimitedLottery(data, token);
-
-      if (!res?.data?.success || !res?.data?.limitedLottery?.id) {
-        toast({
-          title: 'Error',
-          description: 'Failed to create lottery',
-          variant: 'destructive',
-        })
-        throw new Error("API call failed");
-      }
-
-      const lottery_id = res.data.limitedLottery.id;
-
-      const InitConfigIx = await program.methods.initializeLimitedLotteryConfig(
-        lottery_id,
-        data.lotteryName, 
-        data.lotterySymbol,
-        data.lotteryURI,
-        new BN(data.price * LAMPORTS_PER_SOL),
-        data.totalTickets,
-      ).instruction();
-  
-      const computeUnitLimitIx = ComputeBudgetProgram.setComputeUnitLimit({
-        units: 22000,  
-      });
-      const recentPriorityFees = await connection.getRecentPrioritizationFees();
-      const minFee = Math.min(...recentPriorityFees.map(fee => fee.prioritizationFee));
-  
-      const computeUnitPriceIx = ComputeBudgetProgram.setComputeUnitPrice({
-        microLamports: minFee + 1, 
-      });
-
-      const blockhashContext = await connection.getLatestBlockhashAndContext();
-  
-      const tx = new Transaction({
-        feePayer: publicKey,
-        blockhash: blockhashContext.value.blockhash,
-        lastValidBlockHeight: blockhashContext.value.lastValidBlockHeight
-      }).add(computeUnitLimitIx).add(computeUnitPriceIx).add(InitConfigIx);
-  
-      const signature = await sendTransaction(tx, connection);
-      console.log(signature);
-      await initializeLimitedLotteryConfigSign(lottery_id, signature, token);
-
-      return signature;
     },
     onSuccess: (signature) => {
       transactionToast("Initialized config", signature)

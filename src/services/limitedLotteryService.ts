@@ -182,3 +182,18 @@ export const setLimitedLoteryCompleted = async (lotteryId: number, token: string
         
     }
 }
+
+export const deleteLimitedLottery = async (lotteryId: number, token: string) => {
+    try {
+        const res = await axios.delete(`${BACKEND_API}/api/v1/limited-lottery/delete-lottery/${lotteryId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        });
+        return res;
+    } catch (error) {
+        console.error("Error deleting lottery:", error);
+        throw error;
+    }
+}
