@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, ArrowUpRight, Clock, TicketCheck, UsersRound } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Clock, TicketCheck } from 'lucide-react';
 import Image from 'next/image';
 import solanaLogo from '@/assets/solana-logo.png';
 import { SlidingNumber } from '../../sliding-number';

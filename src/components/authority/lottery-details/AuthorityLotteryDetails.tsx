@@ -4,7 +4,6 @@ import Image from "next/image";
 import LotteryTable from "./LotteryTable";
 import { Button } from "@/components/ui/button";
 import { useWinisolProgramAccount } from "@/components/winisol/winisol-data-access";
-import { PublicKey } from "@solana/web3.js";
 import { LimitedLottery, Lottery } from "@/types";
 import { setLimitedLoteryCompleted } from "@/services/limitedLotteryService";
 import { useAuth } from "@/contexts/AuthContext";

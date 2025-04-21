@@ -12,7 +12,7 @@ import { Button } from "../../animated-button";
 import { ArrowRight, Ban } from "lucide-react";
 import Image from "next/image";
 import solanaLogo from "@/assets/solana-logo.png";
-import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { useWinisolProgramAccount } from "@/components/winisol/winisol-data-access";
 import { useDispatch } from "react-redux";
 import { updateLimitedLottery } from '@/redux/slices/limitedLotterySlice'

@@ -70,10 +70,40 @@ export const FAQs = [
         answer: 'Ensure you have enough SOL for transaction fees. If issues persist, try reconnecting your wallet or checking the Solana network status.'
     },
     {
-        id: 16,
+        id: 15,
         question: 'Is WiniSol truly decentralized?',
         answer: 'Yes, WiniSol operates fully on the Solana blockchain with smart contracts handling all transactions in a trustless manner.'
-    }
+    },
+    {
+        id: 16,
+        question: 'What are the types of lottery pools on WiniSol?',
+        answer: 'WiniSol has two pool types: Timely and Limited Ticket. Timely ends after a set time—winner gets 90% of the prize. Limited Ticket ends when all tickets are sold—winner gets 100%.'
+    },
+    {
+        id: 17,
+        question: 'What happens if I don’t win?',
+        answer: 'If you don’t win, you can burn your NFT ticket to reclaim the minting fee. Just make sure not to burn your ticket before the draw ends, or you’ll lose eligibility to claim winnings.'
+    },
+    {
+        id: 18,
+        question: 'Can I transfer or resell my ticket?',
+        answer: 'Yes! Since your ticket is an NFT, you can transfer or even sell it to someone else using any Solana-compatible marketplace.'
+    },
+    {
+        id: 19,
+        question: 'Is the randomness verifiable?',
+        answer: 'Yes, the winner is selected using Switchboard VRF, a decentralized randomness oracle. This ensures that the results are transparent, tamperproof, and verifiable on-chain.'
+    },
+    {
+        id: 20,
+        question: 'What is the minimum amount to join a lottery?',
+        answer: 'Each lottery has a fixed ticket price which is clearly mentioned before you join. There’s no extra or hidden fee apart from this ticket cost and a minimal Solana network fee.'
+    },
+    {
+        id: 21,
+        question: 'Is there a limit to how many tickets I can buy?',
+        answer: 'No, there’s no hard limit. You can buy as many tickets as you like, increasing your chances of winning.'
+    },
 ]
 
 export const WorkingData = [

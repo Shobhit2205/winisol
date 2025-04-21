@@ -2,7 +2,7 @@ import { CreateLotteryInputArgs } from "@/components/authority/dashboard/CreateL
 import axios from "axios";
 import { BACKEND_API } from "../lib/constants";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { CreateLotteryArgs, GetAllLimitedLotteriesArgs, GetAllLotteriesArgs, LotteryDetails, LotteryDetailsResponse, WinningData } from "@/types";
+import { CreateLotteryArgs, GetAllLotteriesArgs, LotteryDetailsResponse } from "@/types";
 
 
 export const createLottery = async (data: CreateLotteryInputArgs, token: string) => {

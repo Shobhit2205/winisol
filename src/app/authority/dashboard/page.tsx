@@ -8,7 +8,7 @@ import { AnimatedTabs } from "@/components/ui/animated-tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { AUTHORITY_PUBLIC_KEY } from "@/lib/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { notFound, useRouter } from "next/navigation";
+import { notFound } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface Tab {

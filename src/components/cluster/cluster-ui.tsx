@@ -13,7 +13,7 @@ export function ClusterUiSelect() {
         {clusters.map((item) => (
           <li key={item.name}>
             <button
-              className={`btn btn-sm hover:bg-custom_black ${item.active ? 'bg-primary border-none rounded-xl' : 'btn-ghost'}`}
+              className={`btn btn-sm hover:bg-custom_black ${item.active ? 'bg-primary border-none rounded-xl hover:bg-primary' : 'btn-ghost'}`}
               onClick={() => setCluster(item)}
             >
               {item.name}

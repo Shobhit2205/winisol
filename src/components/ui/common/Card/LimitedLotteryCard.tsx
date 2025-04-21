@@ -4,7 +4,7 @@ import { ArrowRight, TicketCheck } from 'lucide-react';
 import Image from 'next/image';
 import solanaLogo from '@/assets/solana-logo.png';
 import { Button } from '../../animated-button';
-import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 import Link from 'next/link';
 import { ChooseTicketDialog } from './ChooseTicketDialog';
 

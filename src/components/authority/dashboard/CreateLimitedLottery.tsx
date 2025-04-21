@@ -10,16 +10,23 @@ import { useState } from "react";
 import { useWinisolProgram } from "@/components/winisol/winisol-data-access";
 
 const lotterySchema = z.object({
-    lotteryName: z.string().min(2, "Lottery name must be at least 2 characters."),
-    lotterySymbol: z.string().min(1, "Symbol is required."),
-    lotteryURI: z.string().url("Enter a valid URL."),
+    lotteryName: z.string().min(2, "Lottery name must be at least 2 characters.").max(20, "Lottery name must be at most 20 characters.")
+    .regex(/^[A-Za-z0-9\s]+$/, "Lottery name can only contain letters, numbers, and spaces."),
+    lotterySymbol: z.string().min(1, "Symbol is required.").max(5, "Symbol must be at most 5 characters."),
+    lotteryURI: z.string().url("Enter a valid URL.").max(200, "URI must be at most 200 characters."),
     lotteryImage: z.string().url("Enter a valid image URL."),
     price: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
         message: "Price must be a positive number", 
     }).transform((val) => Number(val)),
-    totalTickets: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
-        message: "Price must be a positive number",
-    }).transform((val) => Number(val)),
+    totalTickets: z
+      .string()
+      .refine((val) => {
+        const num = Number(val);
+        return !isNaN(num) && num > 0 && num <= 1000;
+      }, {
+        message: "Total tickets must be a positive number and not exceed 1000",
+      })
+      .transform((val) => Number(val)),
 });
 
 export type CreateLimitedLotteryInputArgs = z.infer<typeof lotterySchema>;

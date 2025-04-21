@@ -1,6 +1,5 @@
 import { Lottery } from '@/types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 interface LotteriesState {
     lotteries: Lottery[];
