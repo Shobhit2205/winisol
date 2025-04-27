@@ -17,6 +17,7 @@ import { useWiniSolTransactionToast } from '../ui/layouts/Layout';
 import { useToast } from '@/hooks/use-toast';
 import { CreateLimitedLotteryInputArgs } from '../authority/dashboard/CreateLimitedLottery';
 import { buyLimitedLotteryTicketSign, claimLimitedLotteryWinningsSign, commitLimitedLotteryRandomnessSign, createLimitedLottery, createLimitedLotteryRandomnessSign, deleteLimitedLottery, getLimitedLotteryRandomnessKeys, initializeLimitedLotteryConfigSign, initializeLimitedLotterySign, limitedLotteryAuthorityTransferSign, revealLimitedLotteryWinnerSign } from '@/services/limitedLotteryService';
+import { CONNECTION_ENDPOINT } from '@/lib/constants';
 
 interface LotteryArgs {
   lottery_id: number,
@@ -516,12 +517,12 @@ export function useWinisolProgramAccount() {
       const rngKp = web3.Keypair.generate();
 
       const swithcboardIDL = await Program.fetchIdl(
-        sb.ON_DEMAND_DEVNET_PID,
-        {connection: new web3.Connection('https://api.devnet.solana.com')}
+        sb.ON_DEMAND_MAINNET_PID,
+        {connection: new web3.Connection(CONNECTION_ENDPOINT)}
       ) as Idl;
 
       let switchboardProgram = new Program(swithcboardIDL, provider);
-      const queue = new web3.PublicKey(sb.ON_DEMAND_DEVNET_QUEUE);
+      const queue = new web3.PublicKey(sb.ON_DEMAND_MAINNET_QUEUE);
       const queueAccount = new sb.Queue(switchboardProgram, queue);
       // setSbQueue(queue);
       // dispatch(setSbQueue(queue));
