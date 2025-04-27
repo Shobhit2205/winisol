@@ -26,6 +26,11 @@ export enum ClusterNetwork {
 // To use the mainnet-beta cluster, provide a custom endpoint
 export const defaultClusters: Cluster[] = [
   {
+    name: 'mainnet-beta',
+    endpoint: CONNECTION_ENDPOINT || clusterApiUrl('mainnet-beta'),
+    network: ClusterNetwork.Mainnet,
+  },
+  {
     name: 'devnet',
     endpoint: CONNECTION_ENDPOINT || clusterApiUrl('devnet'),
     network: ClusterNetwork.Devnet,

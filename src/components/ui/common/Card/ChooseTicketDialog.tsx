@@ -102,7 +102,7 @@ export function ChooseTicketDialog({lotteryName, lotteryId, price, totalTickets,
             );
           })}
         </div>
-        <DialogFooter className="flex sm:justify-between items-center mt-4 w-full">
+        <DialogFooter className="flex sm:justify-between gap-2 items-center mt-4 w-full">
           <div className="flex items-center gap-2 border border-primary px-4 rounded-badge">
             <Image
               width={12}

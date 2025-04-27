@@ -261,7 +261,7 @@ export function useWinisolProgramAccount() {
         lastValidBlockHeight: blockhashContext.value.lastValidBlockHeight,
       }).add(initLotteryIx).add(computeIx).add(prioriityIx);
   
-      const initLotterySignature = await sendTransaction(initLotteryTx, connection, {skipPreflight: true});
+      const initLotterySignature = await sendTransaction(initLotteryTx, connection);
       await initializeLotterySign(lottery_id, initLotterySignature, token);
       return initLotterySignature;
     },
@@ -302,7 +302,7 @@ export function useWinisolProgramAccount() {
         lastValidBlockHeight: blockhashContext.value.lastValidBlockHeight,
       }).add(initLotteryIx).add(computeIx).add(prioriityIx);
   
-      const initLotterySignature = await sendTransaction(initLotteryTx, connection, {skipPreflight: true});
+      const initLotterySignature = await sendTransaction(initLotteryTx, connection);
       console.log(initLotterySignature);
       await initializeLimitedLotterySign(lottery_id, initLotterySignature, token);
       return initLotterySignature;
@@ -409,7 +409,7 @@ export function useWinisolProgramAccount() {
       }).add(computeUnitLimitIx)
       .add(computeUnitPriceIx).add(buyTicketIx);
   
-      const signature = await sendTransaction(tx, connection, {skipPreflight: true});
+      const signature = await sendTransaction(tx, connection);
       console.log(signature);
       // return signature;
       try {
@@ -1015,7 +1015,7 @@ export function useWinisolProgramAccount() {
   })
 
   const authorityLimitedLotteryTransfer = useMutation<string, Error, LotteryArgs>({
-    mutationKey: ['winisol', 'authority-limited-lottery-transfer', { cluster }],
+    mutationKey: ['winisol', 'authority-limited-lottery-transfer'],
     mutationFn: async ({lottery_id}) => {
       if(!token) {
         throw new Error("Token not found");
@@ -1023,9 +1023,7 @@ export function useWinisolProgramAccount() {
       if(!publicKey){
         throw new Error("Connect your wallet")
       }
-      const authorityTransferIx = await program.methods.limitedLotteryTransferToAuthority(lottery_id).accounts({
-        payer: publicKey
-      }).instruction();
+      const authorityTransferIx = await program.methods.limitedLotteryTransferToAuthority(lottery_id).instruction();
   
       const authorityTranferBlockhashWithContext = await provider.connection.getLatestBlockhash();
       const authorityTransferTx = new web3.Transaction({
@@ -1034,9 +1032,9 @@ export function useWinisolProgramAccount() {
         lastValidBlockHeight: authorityTranferBlockhashWithContext.lastValidBlockHeight
       }).add(authorityTransferIx);
   
-      const authorityTransferSignature = await sendTransaction(authorityTransferTx, provider.connection, {skipPreflight: true});
-  
+      const authorityTransferSignature = await sendTransaction(authorityTransferTx, provider.connection);
       console.log("authority transfer signature: ", authorityTransferSignature);
+
       await limitedLotteryAuthorityTransferSign(lottery_id, publicKey?.toString(), authorityTransferSignature, token);
 
       return authorityTransferSignature;

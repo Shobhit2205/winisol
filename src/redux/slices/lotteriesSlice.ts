@@ -29,13 +29,10 @@ const lotteriesSlice = createSlice({
         updateLottery: (state, action) => {
             const { lotteryId } = action.payload;
             const lottery = state.lotteries.find((lotto) => lotto.id === lotteryId);
-            console.log(lottery?.potAmount);
             if (lottery) {
               lottery.totalTickets += 1;
               lottery.potAmount = Number(lottery.potAmount) + Number(lottery.price);
             }
-            console.log(lottery?.potAmount);
-            console.log(lottery?.price);
         },
     },
 });

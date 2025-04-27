@@ -91,7 +91,6 @@ export default function LotteryCard({data, pageType, isPrevoiusWinnings}: Lotter
     const handleClaimWinnings = async () => {
         try {
             setIsClaiming(true);
-            console.log(data)
             if(data.lotteryType === "limited") {
                 await claimLimitedLotteryWinnings.mutateAsync({lottery_id: data.id})
             } else {

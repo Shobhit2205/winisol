@@ -35,7 +35,6 @@ export function Layout({ children }: { children: ReactNode }) {
         }
         dispatch(setIsLoading(true)); 
         const winningsData = await getWinningsByPublicKey(publicKey.toString());
-        console.log("winning data: ", winningsData);
 
         dispatch(setCurrentWinnings(winningsData.data.currentWinnings));
         dispatch(setPreviousWinnings(winningsData.data.previousWinnings));
@@ -72,7 +71,6 @@ export function Layout({ children }: { children: ReactNode }) {
       try {
         dispatch(setIsLimitedLotteriesLoading(true)); 
         const lotteriesData = await getAllLimitedLottery();
-        console.log('lotteriesData', lotteriesData.data.lotteries)
 
         dispatch(setLimitedLotteries(lotteriesData.data.lotteries));
         dispatch(setIsLimitedLotteriesLoading(false)); 
