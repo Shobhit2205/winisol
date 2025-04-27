@@ -48,7 +48,13 @@ export default function Page() {
             Live
           </Badge>
         </div>
-        <Table>
+        {winners.length === 0 ? 
+        <div className="flex flex-col items-center justify-center h-96">
+          <h2 className="text-2xl font-semibold text-gray-700 dark:text-gray-200">No Winners Yet</h2>
+          <p className="text-gray-500 dark:text-gray-400 mt-2">
+            Stay tuned! As soon as someone wins a lottery, their details will appear here.
+          </p>
+        </div> : <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Wallet Address</TableHead>
@@ -107,7 +113,7 @@ export default function Page() {
               ))
             )}
           </TableBody>
-        </Table>
+        </Table>}
       </div>
     </div>
   );

@@ -120,7 +120,7 @@ export default function LotteryCard({data, pageType, isPrevoiusWinnings}: Lotter
             <div className='w-full flex gap-2 h-[120px]'>
                 <div className='rounded-md bg-gradient-to-r from-primary to-secondary p-[1px] w-full'>
                     <div className='rounded-md flex h-full w-full items-center justify-center  bg-black' >
-                        <Image width={100} height={100} src={data?.image || "https://res.cloudinary.com/shobhit2205/image/upload/v1742150434/Group_n9sfdb.png"} alt='solana lottery image' className='object-cover w-10' />
+                        <Image width={100} height={100} src={data?.image || "https://res.cloudinary.com/shobhit2205/image/upload/v1742150434/Group_n9sfdb.png"} alt='solana lottery image' className='object-cover w-28' />
                     </div>
                 </div>
                 <div className='rounded-md bg-gradient-to-r from-primary to-secondary p-[1px] w-full h-[105px] self-end'>
