@@ -1,7 +1,7 @@
 'use client'
 
 import { useToast } from '@/hooks/use-toast'
-import { CONNECTION_ENDPOINT } from '@/lib/constants'
+import { CONNECTION_ENDPOINT, SOLANA_ENVIRONMENT } from '@/lib/constants'
 import { clusterApiUrl, Connection } from '@solana/web3.js'
 import { atom, useAtomValue, useSetAtom } from 'jotai'
 import { atomWithStorage } from 'jotai/utils'
@@ -26,14 +26,16 @@ export enum ClusterNetwork {
 // To use the mainnet-beta cluster, provide a custom endpoint
 export const defaultClusters: Cluster[] = [
   {
-    name: 'mainnet-beta',
+    name: 'mainnet',
     endpoint: CONNECTION_ENDPOINT || clusterApiUrl('mainnet-beta'),
     network: ClusterNetwork.Mainnet,
+    active: SOLANA_ENVIRONMENT === 'mainnet',
   },
   {
     name: 'devnet',
     endpoint: CONNECTION_ENDPOINT || clusterApiUrl('devnet'),
     network: ClusterNetwork.Devnet,
+    active: SOLANA_ENVIRONMENT === 'devnet',
   },
   { name: 'local', endpoint: 'http://localhost:8899' },
   {

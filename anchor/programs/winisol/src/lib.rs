@@ -709,7 +709,6 @@ pub mod winisol {
       winner_amount = current_pot;
     }
 
-    // Transfer 90% to the winner
     **ctx.accounts.limited_lottery.to_account_info().lamports.borrow_mut() -= winner_amount;
     **ctx.accounts.payer.to_account_info().lamports.borrow_mut() += winner_amount;
 
@@ -750,14 +749,21 @@ pub mod winisol {
     if ctx.accounts.payer.key() != Pubkey::from_str(AUTHORITY).unwrap() {
       return Err(ErrorCode::UnauthorizedAdmin.into());
     }
-    msg!("Transfer to Authority, {}", ctx.accounts.limited_lottery.lottery_pot_amount);
+
     require!(ctx.accounts.limited_lottery.authority_claimed_share == false, ErrorCode::WinningsAlreadyClaimed);
 
     let current_pot = ctx.accounts.limited_lottery.lottery_pot_amount;
 
     let authority_amount: u64;
     if ctx.accounts.limited_lottery.winner_claimed_winnings == false {
-      authority_amount = ctx.accounts.limited_lottery.lottery_pot_amount.checked_mul(0.1 as u64).ok_or(ErrorCode::MathOverflow)?;
+      let calculated_amount = ctx.accounts.limited_lottery.price
+          .checked_mul(ctx.accounts.limited_lottery.total_tickets as u64)
+          .ok_or(ErrorCode::MathOverflow)?
+          .checked_mul(10)
+          .ok_or(ErrorCode::MathOverflow)?
+          .checked_div(100)
+          .ok_or(ErrorCode::MathOverflow)?;
+        authority_amount = std::cmp::min(calculated_amount, current_pot);
     }
     else {
       authority_amount = current_pot;

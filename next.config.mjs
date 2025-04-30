@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
-        domains: ["res.cloudinary.com"],
+        domains: ["data.winisol.com"],
     },
     webpack(config, { isServer }) {
         // Exclude fs from client-side bundles

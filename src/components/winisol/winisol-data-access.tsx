@@ -17,7 +17,7 @@ import { useWiniSolTransactionToast } from '../ui/layouts/Layout';
 import { useToast } from '@/hooks/use-toast';
 import { CreateLimitedLotteryInputArgs } from '../authority/dashboard/CreateLimitedLottery';
 import { buyLimitedLotteryTicketSign, claimLimitedLotteryWinningsSign, commitLimitedLotteryRandomnessSign, createLimitedLottery, createLimitedLotteryRandomnessSign, deleteLimitedLottery, getLimitedLotteryRandomnessKeys, initializeLimitedLotteryConfigSign, initializeLimitedLotterySign, limitedLotteryAuthorityTransferSign, revealLimitedLotteryWinnerSign } from '@/services/limitedLotteryService';
-import { CONNECTION_ENDPOINT } from '@/lib/constants';
+import { CONNECTION_ENDPOINT, SOLANA_ENVIRONMENT } from '@/lib/constants';
 
 interface LotteryArgs {
   lottery_id: number,
@@ -93,7 +93,8 @@ export function useWinisolProgram() {
           lastValidBlockHeight: blockhashContext.value.lastValidBlockHeight
         }).add(computeUnitLimitIx).add(computeUnitPriceIx).add(InitConfigIx);
     
-        const signature = await sendTransaction(tx, connection);
+        const signature = await sendTransaction(tx, connection, {skipPreflight: true});
+        console.log(signature);
   
         await initializeConfig(lottery_id, signature, token);
   
@@ -452,14 +453,14 @@ export function useWinisolProgramAccount() {
         throw new Error("Connect your wallet")
       }
       const rngKp = web3.Keypair.generate();
-
+      const isdevnet = SOLANA_ENVIRONMENT === 'devnet';
       const swithcboardIDL = await Program.fetchIdl(
-        sb.ON_DEMAND_MAINNET_PID,
+        isdevnet ? sb.ON_DEMAND_DEVNET_PID : sb.ON_DEMAND_MAINNET_PID,
         {connection: new web3.Connection(CONNECTION_ENDPOINT)}
       ) as Idl;
 
       let switchboardProgram = new Program(swithcboardIDL, provider);
-      const queue = new web3.PublicKey(sb.ON_DEMAND_MAINNET_QUEUE);
+      const queue = new web3.PublicKey(isdevnet ? sb.ON_DEMAND_DEVNET_QUEUE : sb.ON_DEMAND_MAINNET_QUEUE);
       const queueAccount = new sb.Queue(switchboardProgram, queue);
       // setSbQueue(queue);
       // dispatch(setSbQueue(queue));
@@ -515,14 +516,16 @@ export function useWinisolProgramAccount() {
         throw new Error("Connect your wallet")
       }
       const rngKp = web3.Keypair.generate();
-
+      const isdevnet = SOLANA_ENVIRONMENT === 'devnet';
+      console.log(isdevnet);
       const swithcboardIDL = await Program.fetchIdl(
-        sb.ON_DEMAND_MAINNET_PID,
+        isdevnet ? sb.ON_DEMAND_DEVNET_PID : sb.ON_DEMAND_MAINNET_PID,
         {connection: new web3.Connection(CONNECTION_ENDPOINT)}
       ) as Idl;
+      console.log(swithcboardIDL);
 
       let switchboardProgram = new Program(swithcboardIDL, provider);
-      const queue = new web3.PublicKey(sb.ON_DEMAND_MAINNET_QUEUE);
+      const queue = new web3.PublicKey(isdevnet ? sb.ON_DEMAND_DEVNET_QUEUE : sb.ON_DEMAND_MAINNET_QUEUE);
       const queueAccount = new sb.Queue(switchboardProgram, queue);
       // setSbQueue(queue);
       // dispatch(setSbQueue(queue));
@@ -582,9 +585,9 @@ export function useWinisolProgramAccount() {
         }
         const sbRandomnessPubkey = res.data.randomnessKeys.sbRandomnessPubKey;
         const sbQueuePubkey = res.data.randomnessKeys.sbQueuePubKey;
-
+        const isdevnet = SOLANA_ENVIRONMENT === 'devnet';
         const switchboardIDL = await Program.fetchIdl(
-          sb.ON_DEMAND_MAINNET_QUEUE,
+          isdevnet ? sb.ON_DEMAND_DEVNET_PID : sb.ON_DEMAND_MAINNET_QUEUE,
           { connection: new web3.Connection(CONNECTION_ENDPOINT) }
         ) as Idl;
     
@@ -646,9 +649,9 @@ export function useWinisolProgramAccount() {
         }
         const sbRandomnessPubkey = res.data.randomnessKeys.sbRandomnessPubKey;
         const sbQueuePubkey = res.data.randomnessKeys.sbQueuePubKey;
-
+        const isdevnet = SOLANA_ENVIRONMENT === 'devnet';
         const switchboardIDL = await Program.fetchIdl(
-          sb.ON_DEMAND_MAINNET_PID,
+          isdevnet ? sb.ON_DEMAND_DEVNET_PID : sb.ON_DEMAND_MAINNET_PID,
           { connection: new web3.Connection(CONNECTION_ENDPOINT) }
         ) as Idl;
     
@@ -713,9 +716,9 @@ export function useWinisolProgramAccount() {
       }
       const sbRandomnessPubkey = res.data.randomnessKeys.sbRandomnessPubKey;
       const sbQueuePubkey = res.data.randomnessKeys.sbQueuePubKey;
-
+      const isdevnet = SOLANA_ENVIRONMENT === 'devnet';
       const switchboardIDL = await Program.fetchIdl(
-        sb.ON_DEMAND_MAINNET_PID,
+        isdevnet ? sb.ON_DEMAND_DEVNET_PID : sb.ON_DEMAND_MAINNET_PID,
         { connection: new web3.Connection(CONNECTION_ENDPOINT) }
       ) as Idl;
   
@@ -792,9 +795,9 @@ export function useWinisolProgramAccount() {
       }
       const sbRandomnessPubkey = res.data.randomnessKeys.sbRandomnessPubKey;
       const sbQueuePubkey = res.data.randomnessKeys.sbQueuePubKey;
-
+      const isdevnet = SOLANA_ENVIRONMENT === 'devnet';
       const switchboardIDL = await Program.fetchIdl(
-        sb.ON_DEMAND_MAINNET_PID,
+        isdevnet ? sb.ON_DEMAND_DEVNET_PID : sb.ON_DEMAND_MAINNET_PID,
         { connection: new web3.Connection(CONNECTION_ENDPOINT) }
       ) as Idl;
   
