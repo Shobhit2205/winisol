@@ -21,7 +21,7 @@ export function getWinisolProgramId(cluster: Cluster) {
     case 'devnet':
     case 'testnet':
       // This is the program ID for the Winisol program on devnet and testnet.
-      return new PublicKey('4ZtREdydF64stX6X8UUweVMwCGKBJ1pjwAdNYhzBWEzo')
+      return new PublicKey('FbCRon7bshfv8naiET5t6M1qN7bFnRDoSw4E89AXK6ji')
     case 'mainnet-beta':
     default:
       return WINISOL_PROGRAM_ID

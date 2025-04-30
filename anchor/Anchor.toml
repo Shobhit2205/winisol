@@ -6,7 +6,7 @@ resolution = true
 skip-lint = false
 
 [programs.devnet]
-winisol = "4ZtREdydF64stX6X8UUweVMwCGKBJ1pjwAdNYhzBWEzo"
+winisol = "FbCRon7bshfv8naiET5t6M1qN7bFnRDoSw4E89AXK6ji"
 
 [registry]
 url = "https://api.apr.dev"

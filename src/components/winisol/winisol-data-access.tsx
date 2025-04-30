@@ -517,12 +517,11 @@ export function useWinisolProgramAccount() {
       }
       const rngKp = web3.Keypair.generate();
       const isdevnet = SOLANA_ENVIRONMENT === 'devnet';
-      console.log(isdevnet);
+
       const swithcboardIDL = await Program.fetchIdl(
         isdevnet ? sb.ON_DEMAND_DEVNET_PID : sb.ON_DEMAND_MAINNET_PID,
         {connection: new web3.Connection(CONNECTION_ENDPOINT)}
       ) as Idl;
-      console.log(swithcboardIDL);
 
       let switchboardProgram = new Program(swithcboardIDL, provider);
       const queue = new web3.PublicKey(isdevnet ? sb.ON_DEMAND_DEVNET_QUEUE : sb.ON_DEMAND_MAINNET_QUEUE);

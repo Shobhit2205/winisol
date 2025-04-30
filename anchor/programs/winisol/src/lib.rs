@@ -19,7 +19,7 @@ use anchor_spl::{
 use anchor_lang::system_program;
 use switchboard_on_demand::accounts::RandomnessAccountData;
 
-declare_id!("4ZtREdydF64stX6X8UUweVMwCGKBJ1pjwAdNYhzBWEzo");
+declare_id!("FbCRon7bshfv8naiET5t6M1qN7bFnRDoSw4E89AXK6ji");
 
 #[constant]
 pub const AUTHORITY: &str = "RJtnLDyB6pZUWDZ7qZE8nCakas6eaofnqKyBDB7Xf1A";

@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/winisol.json`.
  */
 export type Winisol = {
-  "address": "4ZtREdydF64stX6X8UUweVMwCGKBJ1pjwAdNYhzBWEzo",
+  "address": "FbCRon7bshfv8naiET5t6M1qN7bFnRDoSw4E89AXK6ji",
   "metadata": {
     "name": "winisol",
     "version": "0.1.0",
