@@ -1,7 +1,7 @@
 .anchor
 .DS_Store
 target/debug
-target/deploy
+target/deploy/winisol-keypair.json
 target/release
 target/sbf-solana-solana
 target/test-ledger
