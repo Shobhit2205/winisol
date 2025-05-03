@@ -108,7 +108,7 @@ export function Layout({ children }: { children: ReactNode }) {
       <div className="pt-16">
         {SOLANA_ENVIRONMENT === 'devnet' && (
           <div className="w-full text-center text-black bg-primary font-semibold py-1 px-2">
-            🚀 Running on Devnet | Mainnet Solana Launch Incoming! Stay Tuned 🔥  
+            🚀 Running on Devnet | For mainnet visit <a href="https://winisol.com" className='border-b-2 border-black'>winisol</a> 🔥  
           </div>
         )}
         {currentWinnings?.length > 0 && <div className='w-full bg-primary text-black flex items-center justify-center py-3 gap-2 px-16'>
