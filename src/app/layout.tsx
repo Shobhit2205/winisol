@@ -7,6 +7,8 @@ import { Layout } from "@/components/ui/layouts/Layout";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/components/ui/layouts/theme-provider";
 import { ReduxProvider } from "./redux-provider";
+import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next"
 
 export const metadata = {
   title: 'WiniSol - Decentralized Solana Lottery Platform',
@@ -92,6 +94,23 @@ export default function RootLayout({
       </head>
       
       <body>
+      <Script
+          strategy="afterInteractive"
+          src="https://www.googletagmanager.com/gtag/js?id=G-CKN828764V"
+        />
+        <Script
+          id="gtag-init"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-CKN828764V');
+            `,
+          }}
+        />
+        <Analytics/>
         <ReduxProvider>
           <ReactQueryProvider>
             <ClusterProvider>

@@ -6,7 +6,7 @@ import HeroSlideRight from "@/assets/hero-button-slide-right.png"
 import HeroAir from "@/assets/hero-air.png";
 import Image from "next/image";
 import Link from "next/link";
-import { IconBrandDiscord, IconBrandInstagram, IconBrandX } from "@tabler/icons-react";
+import { IconBrandDiscord, IconBrandInstagram, IconBrandLinkedin, IconBrandTelegram, IconBrandX } from "@tabler/icons-react";
 
 
 export default function HeroSection() {
@@ -37,7 +37,7 @@ export default function HeroSection() {
             </div>
             <Image width={100} height={100} src={HeroAir.src} alt="solana" className="w-12 h-12 " />
             
-           <div className="flex flex-col gap-4 bg-[#63636333] items-center justify-center py-6 px-2 rounded-badge h-fit absolute right-4 top-1/3 z-10">
+           <div className="flex flex-col gap-4 bg-[#63636333] items-center justify-center py-6 px-2 rounded-badge h-fit absolute right-4 top-1/4 z-10">
            <a href="https://www.instagram.com/winisol_/" target="_blank" className="cursor-pointer transition-all hover:scale-125 hover:text-primary" >
             <IconBrandInstagram size={32}/>
            </a>
@@ -47,6 +47,12 @@ export default function HeroSection() {
            <a href="https://x.com/winisol_" target="_blank" className="cursor-pointer transition-all hover:scale-125 hover:text-primary" >
             <IconBrandX  size={32} />
            </a>
+           <a href="https://www.linkedin.com/company/winisol-org/" target="_blank" className="cursor-pointer transition-all hover:scale-125 hover:text-primary" >
+            <IconBrandLinkedin  size={32} />
+           </a>
+           {/* <a href="https://t.me/+mymR169Bmc8xZGFl" target="_blank" className="cursor-pointer transition-all hover:scale-125 hover:text-primary" >
+            <IconBrandTelegram  size={32} />
+           </a> */}
            
            </div>
         </div>
