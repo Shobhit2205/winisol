@@ -21,11 +21,17 @@ const footerLinks = [
     },
     {
         id: 4,
+        label: 'Blogs',
+        link: 'https://blogs.winisol.com',
+        external: true,
+    },
+    {
+        id: 5,
         label: 'Privacy Policy',
         link: '/privacy-policy',
     },
     {
-        id: 5,
+        id: 6,
         label: 'Terms & Conditions',
         link: '/terms-and-conditions',
     }, 
@@ -44,11 +50,27 @@ export default function Footer() {
                 </Link>
                 
                 <div className="flex items-center flex-wrap justify-center gap-6">
-                    {footerLinks.map((link) => (
-                        <Link key={link.id} href={link.link} className="relative text-white text-center after:content-[''] after:w-0 after:h-[2px] after:bg-primary after:absolute after:left-0 after:bottom-[-6px] after:rounded-lg after:transition-all after:duration-500 hover:after:w-full hover:text-primary">
-                            {link.label}
-                        </Link>
-                    ))}
+                    {footerLinks.map((link) =>
+                        link.external ? (
+                            <a
+                                key={link.id}
+                                href={link.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="relative text-white text-center after:content-[''] after:w-0 after:h-[2px] after:bg-primary after:absolute after:left-0 after:bottom-[-6px] after:rounded-lg after:transition-all after:duration-500 hover:after:w-full hover:text-primary"
+                            >
+                                {link.label}
+                            </a>
+                        ) : (
+                            <Link
+                                key={link.id}
+                                href={link.link}
+                                className="relative text-white text-center after:content-[''] after:w-0 after:h-[2px] after:bg-primary after:absolute after:left-0 after:bottom-[-6px] after:rounded-lg after:transition-all after:duration-500 hover:after:w-full hover:text-primary"
+                            >
+                                {link.label}
+                            </Link>
+                        )
+                    )}
                 </div>
                 <Link href={'/contact'} className="relative text-white after:content-[''] after:w-0 after:h-[2px] after:bg-primary after:absolute after:left-0 after:bottom-[-6px] after:rounded-lg after:transition-all after:duration-500 hover:after:w-full hover:text-primary">Contact us</Link>
             </div>
