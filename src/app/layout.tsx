@@ -8,7 +8,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/components/ui/layouts/theme-provider";
 import { ReduxProvider } from "./redux-provider";
 import Script from "next/script";
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 export const metadata = {
   title: 'WiniSol - Decentralized Solana Lottery Platform',
@@ -111,6 +112,7 @@ export default function RootLayout({
           }}
         />
         <Analytics/>
+        <SpeedInsights/>
         <ReduxProvider>
           <ReactQueryProvider>
             <ClusterProvider>
